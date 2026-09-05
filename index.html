@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio | ECE Undergrad</title>
+    <style>
+        /* CSS Variables for Themes */
+        :root {
+            --bg-color: #0d1117;
+            --header-bg: #161b22;
+            --card-bg: #0d1117;
+            --border-color: #30363d;
+            --text-primary: #c9d1d9;
+            --text-secondary: #8b949e;
+            --link-color: #58a6ff;
+            --btn-bg: #21262d;
+            --btn-hover: #30363d;
+            --modal-bg: #161b22;
+            --verilog-color: #848bf3;
+            --c-color: #555555;
+            --hardware-color: #e34c26;
+        }
+
+        [data-theme="light"] {
+            --bg-color: #ffffff;
+            --header-bg: #f6f8fa;
+            --card-bg: #ffffff;
+            --border-color: #d0d7de;
+            --text-primary: #1F2328;
+            --text-secondary: #636c76;
+            --link-color: #0969da;
+            --btn-bg: #f6f8fa;
+            --btn-hover: #f3f4f6;
+            --modal-bg: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* Low-opacity image background overlay */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('background.jpg');
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-size: cover;
+            opacity: 0.05; /* Low opacity keeps dark gray dominant */
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        a {
+            color: var(--link-color);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* Navbar */
+        header {
+            background-color: var(--header-bg);
+            padding: 16px 32px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 600;
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+        }
+
+        .header-logo {
+            width: 32px;
+            height: 32px;
+            background-color: var(--text-primary);
+            border-radius: 50%;
+            margin-right: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--bg-color);
+            font-weight: bold;
+        }
+
+        .theme-toggle-btn {
+            background-color: var(--btn-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 5px 12px;
+            font-size: 13px;
+            font-weight: 500;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .theme-toggle-btn:hover {
+            background-color: var(--btn-hover);
+        }
+
+        /* Layout Container */
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 32px;
+            display: flex;
+            gap: 32px;
+            flex: 1;
+            width: 100%;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 296px;
+            flex-shrink: 0;
+        }
+
+        .avatar {
+            width: 296px;
+            height: 296px;
+            border-radius: 50%;
+            border: 1px solid var(--border-color);
+            margin-bottom: 16px;
+            background-image: url('profile_pic.png');
+            background-size: cover;
+        }
+
+        .names {
+            margin-bottom: 12px;
+        }
+
+        .names h1 {
+            font-size: 26px;
+            line-height: 1.25;
+            font-weight: 600;
+        }
+
+        .names h2 {
+            font-size: 20px;
+            color: var(--text-secondary);
+            font-weight: 300;
+        }
+
+        .bio {
+            margin-bottom: 16px;
+            font-size: 16px;
+        }
+
+        .btn-edit {
+            display: block;
+            width: 100%;
+            text-align: center;
+            background-color: var(--btn-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 5px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-bottom: 24px;
+        }
+
+        .btn-edit:hover {
+            background-color: var(--btn-hover);
+            text-decoration: none;
+        }
+
+        .contact-info {
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        .contact-info ul {
+            list-style: none;
+        }
+
+        .contact-info li {
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .contact-icon {
+            stroke: var(--text-secondary);
+            fill: none;
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+
+        /* Projects Grid */
+        .main-content {
+            flex-grow: 1;
+        }
+
+        .section-header {
+            font-size: 16px;
+            font-weight: 400;
+            margin-bottom: 16px;
+        }
+
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 16px;
+        }
+
+        .project-card {
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 16px;
+            background-color: var(--card-bg);
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            transition: transform 0.15s ease, border-color 0.15s ease;
+        }
+
+        .project-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--link-color);
+        }
+
+        .project-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .project-title svg {
+            fill: var(--text-secondary);
+        }
+
+        .project-badge {
+            font-size: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 2em;
+            padding: 0 7px;
+            color: var(--text-secondary);
+            margin-left: auto;
+        }
+
+        .project-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            flex-grow: 1;
+        }
+
+        .project-meta {
+            font-size: 12px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .lang-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 4px;
+            vertical-align: text-bottom;
+        }
+
+        /* Project Modal Overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.4);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-container {
+            width: 90%;
+            max-width: 900px;
+            height: 80vh;
+            background-color: var(--modal-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            color: var(--text-primary);
+        }
+
+        .modal-header {
+            padding: 12px 16px;
+            background-color: var(--header-bg);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-title {
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .external-link-btn {
+            font-size: 13px;
+            color: var(--link-color);
+        }
+
+        .close-modal-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 20px;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .close-modal-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            background-color: var(--modal-bg);
+        }
+
+        .readme-box {
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: var(--bg-color);
+            padding: 20px;
+        }
+
+        .readme-header {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+        }
+
+        .file-list {
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin-bottom: 20px;
+            list-style: none;
+            background-color: var(--header-bg);
+        }
+
+        .file-item {
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: monospace;
+        }
+
+        .file-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Footer */
+        footer {
+            border-top: 1px solid var(--border-color);
+            margin-top: 40px;
+            padding: 24px 32px;
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Section Spacing & Box Styles */
+        .section-header.extra-space {
+            margin-top: 32px;
+        }
+
+        .skills-box, .interests-box {
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: var(--card-bg);
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        /* Skills Categories & Badges */
+        .skill-category {
+            margin-bottom: 16px;
+        }
+
+        .skill-category:last-child {
+            margin-bottom: 0;
+        }
+
+        .skill-category h3 {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .badges-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .badge {
+            background-color: var(--btn-bg);
+            border: 1px solid var(--border-color);
+            color: var(--link-color);
+            font-size: 12px;
+            font-weight: 500;
+            padding: 4px 10px;
+            border-radius: 2em;
+            display: inline-block;
+        }
+
+        /* Interests List */
+        .interests-list {
+            list-style: none;
+            font-size: 14px;
+        }
+
+        .interests-list li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+
+        .interests-list li:last-child {
+            margin-bottom: 0;
+        }
+
+        .interests-list li::before {
+            content: "▹";
+            position: absolute;
+            left: 0;
+            color: var(--link-color);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+            }
+            .avatar {
+                width: 100%;
+                max-width: 296px;
+                height: auto;
+                aspect-ratio: 1/1;
+            }
+            .modal-container {
+                width: 95%;
+                height: 85vh;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-brand">
+            <div class="header-logo">ECE</div>
+            Ian Samaniego
+        </div>
+        <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()">
+            <span id="themeIcon"></span> <span id="themeText">Light Mode</span>
+        </button>
+    </header>
+
+    <div class="container">
+        <aside class="sidebar">
+            <div class="avatar"></div>
+            <div class="names">
+                <h1>Ian Samaniego</h1>
+                <h2>isamanie-ece</h2>
+            </div>
+
+            <div class="contact-info">
+                <ul>
+                    <li>
+                        <svg class="contact-icon" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                            <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                        </svg>
+                        Carnegie Mellon University
+                    </li>
+                    <li>
+                        <svg class="contact-icon" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/>
+                            <circle cx="12" cy="10" r="3"/>
+                        </svg>
+                        Pittsburgh, PA
+                    </li>
+                    <li>
+                        <svg class="contact-icon" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect width="20" height="16" x="2" y="4" rx="2"/>
+                            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                        </svg>
+                        <a href="mailto:isamanie@andrew.cmu.edu">isamanie@andrew.cmu.edu</a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="bio">
+                Undergraduate Electrical and Computer Engineering student at Carnegie Mellon University. Focused on computer architecture, VLSI design, real-time embedded systems, and hardware-software co-design.
+            </div>
+            <a href="example_resume.txt" class="btn-edit">Download Resume</a>
+        </aside>
+
+        <main class="main-content">
+            <h2 class="section-header">Pinned Projects</h2>
+            <div class="projects-grid">
+                
+                <div class="project-card" onclick="openProjectModal(
+                    '5stage-pipeline-cpu', 
+                    'https://github.com/janedoe-ece/5stage-pipeline-cpu',
+                    'src/ core.sv, alu.sv, hazard_unit.sv',
+                    'Designed and implemented a 5-stage pipelined microprocessor core. Includes full hazard detection, data forwarding logic, branch prediction, and memory hierarchy integration using SystemVerilog.'
+                )">
+                    <div class="project-title">
+                        <svg viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M2 2.5A2.5 2.5 0 014.5 0h8.75a.75.75 0 01.75.75v12.5a.75.75 0 01-.75.75h-2.5a.75.75 0 110-1.5h1.75v-2h-8a1 1 0 00-.714 1.7.75.75 0 01-1.072 1.05A2.495 2.495 0 012 11.5v-9zm10.5-1V9h-8c-.356 0-.694.074-1 .208V2.5a1 1 0 011-1h8zM5 12.25v3.25a.25.25 0 00.4.2l1.45-1.087a.25.25 0 01.3 0L8.6 15.7a.25.25 0 00.4-.2v-3.25a.25.25 0 00-.25-.25h-3.5a.25.25 0 00-.25.25z"></path></svg>
+                        <span>5stage-pipeline-cpu</span>
+                        <span class="project-badge">Public</span>
+                    </div>
+                    <p class="project-desc">Designed and implemented a 5-stage pipelined microprocessor core. Includes full hazard detection, data forwarding logic, branch prediction, and memory hierarchy integration using SystemVerilog.</p>
+                    <div class="project-meta">
+                        <span><span class="lang-dot" style="background-color: var(--verilog-color);"></span>SystemVerilog</span>
+                    </div>
+                </div>
+
+                <div class="project-card" onclick="openProjectModal(
+                    'usb-protocol-handler', 
+                    'https://github.com/janedoe-ece/usb-protocol-handler',
+                    'rtl/ usb_sie.sv, crc16.sv, bit_stuffer.sv',
+                    'Implemented a USB 2.0 Serial Interface Engine in SystemVerilog, featuring differential signaling, bit stuffing, CRC encoding/decoding, and error detection for reliable high-speed data transmission.'
+                )">
+                    <div class="project-title">
+                        <svg viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M2 2.5A2.5 2.5 0 014.5 0h8.75a.75.75 0 01.75.75v12.5a.75.75 0 01-.75.75h-2.5a.75.75 0 110-1.5h1.75v-2h-8a1 1 0 00-.714 1.7.75.75 0 01-1.072 1.05A2.495 2.495 0 012 11.5v-9zm10.5-1V9h-8c-.356 0-.694.074-1 .208V2.5a1 1 0 011-1h8zM5 12.25v3.25a.25.25 0 00.4.2l1.45-1.087a.25.25 0 01.3 0L8.6 15.7a.25.25 0 00.4-.2v-3.25a.25.25 0 00-.25-.25h-3.5a.25.25 0 00-.25.25z"></path></svg>
+                        <span>usb-protocol-handler</span>
+                        <span class="project-badge">Public</span>
+                    </div>
+                    <p class="project-desc">Implemented a USB 2.0 Serial Interface Engine in SystemVerilog, featuring differential signaling, bit stuffing, CRC encoding/decoding, and error detection for reliable high-speed data transmission.</p>
+                    <div class="project-meta">
+                        <span><span class="lang-dot" style="background-color: var(--verilog-color);"></span>SystemVerilog</span>
+                    </div>
+                </div>
+
+                <div class="project-card" onclick="openProjectModal(
+                    'sram-array-design', 
+                    'https://github.com/janedoe-ece/sram-array-design',
+                    'layout/ sram_6t.gds, schematics/ sense_amp.sch',
+                    'Designed a high-density, low-power SRAM memory array. Includes transistor-level schematic design, 6T SRAM cell layout, sense amplifier optimization, and Cadence Virtuoso DRC/LVS validation.'
+                )">
+                    <div class="project-title">
+                        <svg viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M2 2.5A2.5 2.5 0 014.5 0h8.75a.75.75 0 01.75.75v12.5a.75.75 0 01-.75.75h-2.5a.75.75 0 110-1.5h1.75v-2h-8a1 1 0 00-.714 1.7.75.75 0 01-1.072 1.05A2.495 2.495 0 012 11.5v-9zm10.5-1V9h-8c-.356 0-.694.074-1 .208V2.5a1 1 0 011-1h8zM5 12.25v3.25a.25.25 0 00.4.2l1.45-1.087a.25.25 0 01.3 0L8.6 15.7a.25.25 0 00.4-.2v-3.25a.25.25 0 00-.25-.25h-3.5a.25.25 0 00-.25.25z"></path></svg>
+                        <span>sram-array-design</span>
+                        <span class="project-badge">Public</span>
+                    </div>
+                    <p class="project-desc">Designed a high-density, low-power SRAM memory array. Includes transistor-level schematic design, 6T SRAM cell layout, sense amplifier optimization, and Cadence Virtuoso DRC/LVS validation.</p>
+                    <div class="project-meta">
+                        <span><span class="lang-dot" style="background-color: var(--hardware-color);"></span>VLSI / Cadence</span>
+                    </div>
+                </div>
+
+                <div class="project-card" onclick="openProjectModal(
+                    'custom-rtos-kernel', 
+                    'https://github.com/janedoe-ece/custom-rtos-kernel',
+                    'kernel/ scheduler.c, context_switch.s, mutex.c',
+                    'Built a preemptive Real-Time Operating System from scratch. Written in C and ARM assembly featuring priority scheduling, context switching, mutexes, condition variables, and peripheral drivers.'
+                )">
+                    <div class="project-title">
+                        <svg viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M2 2.5A2.5 2.5 0 014.5 0h8.75a.75.75 0 01.75.75v12.5a.75.75 0 01-.75.75h-2.5a.75.75 0 110-1.5h1.75v-2h-8a1 1 0 00-.714 1.7.75.75 0 01-1.072 1.05A2.495 2.495 0 012 11.5v-9zm10.5-1V9h-8c-.356 0-.694.074-1 .208V2.5a1 1 0 011-1h8zM5 12.25v3.25a.25.25 0 00.4.2l1.45-1.087a.25.25 0 01.3 0L8.6 15.7a.25.25 0 00.4-.2v-3.25a.25.25 0 00-.25-.25h-3.5a.25.25 0 00-.25.25z"></path></svg>
+                        <span>custom-rtos-kernel</span>
+                        <span class="project-badge">Public</span>
+                    </div>
+                    <p class="project-desc">Built a preemptive Real-Time Operating System from scratch. Written in C and ARM assembly featuring priority scheduling, context switching, mutexes, condition variables, and peripheral drivers.</p>
+                    <div class="project-meta">
+                        <span><span class="lang-dot" style="background-color: var(--c-color);"></span>C / Assembly</span>
+                    </div>
+                </div>
+
+            </div>
+            <h2 class="section-header extra-space">Skills</h2>
+        
+            <div class="skills-box">
+                <div class="skill-category">
+                    <h3>Hardware & Architecture</h3>
+                    <div class="badges-group">
+                        <span class="badge">SystemVerilog</span>
+                        <span class="badge">Verilog</span>
+                        <span class="badge">FPGA (Quartus)</span>
+                        <span class="badge">Cadence Virtuoso</span>
+                        <span class="badge">Gem5 simulator</span>
+                    </div>
+                </div>
+            
+                <div class="skill-category">
+                    <h3>Software & Embedded Systems</h3>
+                    <div class="badges-group">
+                        <span class="badge">C / C++</span>
+                        <span class="badge">ARM Assembly</span>
+                        <span class="badge">Python</span>
+                        <span class="badge">Git / GitHub</span>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="section-header extra-space">Interests</h2>
+            <div class="interests-box">
+                <ul class="interests-list">
+                    <li><strong>Rock Climbing:</strong> Active member of the CMU Rock Climbing Club, frequently tackling indoor bouldering and top-rope routes around Pittsburgh.</li>
+                    <li><strong>Visual Arts & Painting:</strong> Longtime traditional artist focused on sketchwork and acrylic painting, exploring creative expression off the screen.</li>
+                </ul>
+            </div>
+        </main>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModalOnOverlay(event)">
+        <div class="modal-container">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <svg viewBox="0 0 16 16" width="16" height="16" fill="var(--text-secondary)"><path fill-rule="evenodd" d="M2 2.5A2.5 2.5 0 014.5 0h8.75a.75.75 0 01.75.75v12.5a.75.75 0 01-.75.75h-2.5a.75.75 0 110-1.5h1.75v-2h-8a1 1 0 00-.714 1.7.75.75 0 01-1.072 1.05A2.495 2.495 0 012 11.5v-9zm10.5-1V9h-8c-.356 0-.694.074-1 .208V2.5a1 1 0 011-1h8zM5 12.25v3.25a.25.25 0 00.4.2l1.45-1.087a.25.25 0 01.3 0L8.6 15.7a.25.25 0 00.4-.2v-3.25a.25.25 0 00-.25-.25h-3.5a.25.25 0 00-.25.25z"></path></svg>
+                    <span id="modalProjectName">Project Title</span>
+                </div>
+                <div class="modal-actions">
+                    <a id="modalExternalLink" href="#" target="_blank" rel="noopener noreferrer" class="external-link-btn">Open directly on GitHub ↗</a>
+                    <button class="close-modal-btn" onclick="closeProjectModal()">&times;</button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <ul class="file-list" id="modalFileList">
+                    </ul>
+                <div class="readme-box">
+                    <div class="readme-header">📄 README.md</div>
+                    <div id="modalReadmeContent">
+                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Website design inspired by <a href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub</a>. Written with code generation assistance from <strong>Gemini Pro</strong>.</p>
+    </footer>
+
+    <script>
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const themeIcon = document.getElementById('themeIcon');
+            const themeText = document.getElementById('themeText');
+
+            if (currentTheme === 'light') {
+                document.documentElement.removeAttribute('data-theme');
+                themeIcon.textContent = '';
+                themeText.textContent = 'Light Mode';
+            } else {
+                document.documentElement.setAttribute('data-theme', 'light');
+                themeIcon.textContent = '';
+                themeText.textContent = 'Dark Mode';
+            }
+        }
+
+        function openProjectModal(name, url, files, readme) {
+            document.getElementById('modalProjectName').textContent = name;
+            document.getElementById('modalExternalLink').href = url;
+            
+            const fileArray = files.split(', ');
+            let fileListHTML = `<li class="file-item">📁 repository root</li>`;
+            fileArray.forEach(file => {
+                fileListHTML += `<li class="file-item">📄 ${file}</li>`;
+            });
+            fileListHTML += `<li class="file-item">📄 README.md</li>`;
+            
+            document.getElementById('modalFileList').innerHTML = fileListHTML;
+            document.getElementById('modalReadmeContent').innerHTML = `<p>${readme}</p>`;
+            document.getElementById('modalOverlay').classList.add('active');
+        }
+
+        function closeProjectModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+        }
+
+        function closeModalOnOverlay(event) {
+            if (event.target.id === 'modalOverlay') {
+                closeProjectModal();
+            }
+        }
+    </script>
+</body>
+</html>
