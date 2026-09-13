@@ -1,0 +1,24 @@
+I used a variety of ai models such as gemini pro, chatgpt 5.6 luna and kiro. In class I noticed
+that someone was able to get a pretty faithful recreation in one prompt by asking the model to forcably askthem questions about
+design decisions while I still had a 2d game and was struggling to implement the basic game mechanics, so I tried that strategy on
+using different models. The results were not very good so I decided to stick to my original result and improve on that. In the end I'm not
+really satisfied with the result but it passes as a crossy road clone.
+
+Actual Prompts
+
+Create a crossy road copy, focus on the core game mechanics specifically point scoring, collisions, and different obstacles such as cars, trucks and the rivers.
+
+Add a timer that ends the game similar to the eagle in the original game.
+
+Movement on the logs seems to be bugged, ie movement rubberbands the player to the original spot where they boarded the log.
+
+Cars collisions are not alligned with the visual model.
+
+... Then a bunch of back and forth trying to fix the log/river mechanics that went no where...
+
+Adjust the visuals to be in isometric perspective with a 3/4's quarter view.
+Update the character to be a white chicken with a red comb.
+The character is missing its left eye.
+The character faces the wrong way on movements, ie moving left results in the character jumping to the left but facing to the right.
+Make the cars different colors and different speeds.
+... Then I manually changed some of the parameters to make the game look nicer ...
