@@ -1,6 +1,6 @@
-I used a variety of ai models such as gemini pro, chatgpt 5.6 luna and kiro. In class I noticed
-that someone was able to get a pretty faithful recreation in one prompt by asking the model to forcably askthem questions about
-design decisions while I still had a 2d game and was struggling to implement the basic game mechanics, so I tried that strategy on
+I used a variety of ai models such as gemini pro, chatgpt 5.6 luna and kiro. In class I noticed 
+that someone was able to get a pretty faithful recreation in one prompt by asking the model to forcably askthem questions about 
+design decisions while I still had a 2d game and was struggling to implement the basic game mechanics, so I tried that strategy on 
 using different models. The results were not very good so I decided to stick to my original result and improve on that. In the end I'm not
 really satisfied with the result but it passes as a crossy road clone.
 
@@ -21,4 +21,7 @@ Update the character to be a white chicken with a red comb.
 The character is missing its left eye.
 The character faces the wrong way on movements, ie moving left results in the character jumping to the left but facing to the right.
 Make the cars different colors and different speeds.
+Zoom in the camera to not include so much of the dead space around the grass.
+Place a row of trees at spawn so that the user cannot move backwards over the void.
+Make the camera scroll with the character, not jump.
 ... Then I manually changed some of the parameters to make the game look nicer ...
