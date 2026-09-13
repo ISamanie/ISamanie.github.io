@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Crossy Road</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="game-container">
+    <canvas id="game-canvas"></canvas>
+
+    <!-- HUD -->
+    <div id="hud">
+      <div id="score-display">0</div>
+    </div>
+
+    <!-- Start Screen -->
+    <div id="start-screen" class="overlay">
+      <div class="overlay-box">
+        <h1 class="game-title">CROSSY ROAD</h1>
+        <p class="subtitle">Hop to it!</p>
+        <button id="start-btn" class="big-btn">TAP TO START</button>
+        <div class="controls-hint">
+          <span>⬆ ⬇ ⬅ ➡ Arrow Keys or WASD</span><br/>
+          <span>Mobile: Swipe or tap directional buttons</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Death Screen -->
+    <div id="death-screen" class="overlay hidden">
+      <div class="overlay-box">
+        <h2 id="death-title">SQUASHED!</h2>
+        <div class="score-result">
+          <div class="score-label">SCORE</div>
+          <div id="final-score">0</div>
+        </div>
+        <div class="score-result">
+          <div class="score-label">BEST</div>
+          <div id="best-score">0</div>
+        </div>
+        <button id="restart-btn" class="big-btn">PLAY AGAIN</button>
+      </div>
+    </div>
+
+    <!-- Mobile Controls -->
+    <div id="mobile-controls">
+      <div class="dpad">
+        <button class="dpad-btn dpad-up"   data-dir="up">▲</button>
+        <button class="dpad-btn dpad-left" data-dir="left">◀</button>
+        <button class="dpad-btn dpad-down" data-dir="down">▼</button>
+        <button class="dpad-btn dpad-right"data-dir="right">▶</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>

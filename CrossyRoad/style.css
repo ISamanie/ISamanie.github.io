@@ -1,0 +1,190 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #000;
+  font-family: 'Arial Black', Arial, sans-serif;
+}
+
+#game-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+#game-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ── HUD ── */
+#hud {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 10;
+}
+
+#score-display {
+  font-size: 48px;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 3px 0 #333, 0 0 12px rgba(0,0,0,0.6);
+  text-align: center;
+  letter-spacing: 2px;
+  min-width: 80px;
+}
+
+/* ── Overlays ── */
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 100;
+}
+
+.overlay.hidden {
+  display: none;
+}
+
+.overlay-box {
+  background: #fff;
+  border-radius: 20px;
+  padding: 36px 44px;
+  text-align: center;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+  min-width: 280px;
+  max-width: 90vw;
+}
+
+.game-title {
+  font-size: 42px;
+  font-weight: 900;
+  color: #e8370a;
+  letter-spacing: 3px;
+  text-shadow: 0 4px 0 #a0240a;
+  margin-bottom: 6px;
+}
+
+.subtitle {
+  font-size: 18px;
+  color: #666;
+  margin-bottom: 24px;
+}
+
+#death-title {
+  font-size: 34px;
+  font-weight: 900;
+  color: #e8370a;
+  letter-spacing: 2px;
+  text-shadow: 0 3px 0 #a0240a;
+  margin-bottom: 20px;
+}
+
+.score-result {
+  margin-bottom: 16px;
+}
+
+.score-label {
+  font-size: 13px;
+  letter-spacing: 3px;
+  color: #aaa;
+  margin-bottom: 2px;
+}
+
+#final-score, #best-score {
+  font-size: 52px;
+  font-weight: 900;
+  color: #333;
+  line-height: 1;
+}
+
+#best-score {
+  color: #e8a00a;
+}
+
+.big-btn {
+  margin-top: 20px;
+  background: #e8370a;
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  padding: 14px 40px;
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  cursor: pointer;
+  box-shadow: 0 5px 0 #a0240a;
+  transition: transform 0.08s, box-shadow 0.08s;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.big-btn:active {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 #a0240a;
+}
+
+.controls-hint {
+  margin-top: 18px;
+  font-size: 12px;
+  color: #aaa;
+  line-height: 1.7;
+}
+
+/* ── Mobile D-Pad ── */
+#mobile-controls {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.dpad {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  pointer-events: all;
+}
+
+.dpad-btn {
+  position: absolute;
+  width: 46px;
+  height: 46px;
+  background: rgba(255,255,255,0.25);
+  border: 2px solid rgba(255,255,255,0.5);
+  border-radius: 10px;
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-user-select: none;
+  user-select: none;
+  transition: background 0.1s;
+}
+
+.dpad-btn:active, .dpad-btn.active {
+  background: rgba(255,255,255,0.55);
+}
+
+.dpad-up    { top: 0;    left: 52px; }
+.dpad-down  { bottom: 0; left: 52px; }
+.dpad-left  { top: 52px; left: 0;   }
+.dpad-right { top: 52px; right: 0;  }
