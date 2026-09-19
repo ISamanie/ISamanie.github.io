@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Perspective Cube Trainer · CMU 15-113</title>
+<link rel="stylesheet" href="../static/style.css" />
+</head>
+<body>
+
+<header>
+  <h1>Perspective Cube Trainer <span class="badge">CMU 15-113 · HW3</span></h1>
+  <p>Practice two-point perspective by completing a 3D cube from a given vertical edge and two vanishing points.</p>
+</header>
+
+<main>
+  <!-- Left: canvas + toolbar -->
+  <div class="card canvas-card">
+    <div class="toolbar">
+      <button id="resetBtn" class="primary">↺ Reset Challenge</button>
+      <button id="undoBtn">Undo</button>
+      <button id="clearBtn">Clear My Lines</button>
+      <button id="solutionBtn" class="ghost" disabled>Show Solution</button>
+      <label class="vp-toggle-label">
+        <input type="checkbox" id="vpToggle" checked />
+        Show vanishing points
+      </label>
+      <div class="spacer"></div>
+      <button id="evaluateBtn" class="primary">Evaluate Drawing →</button>
+    </div>
+    <canvas id="canvas" width="1100" height="680"></canvas>
+    <div class="canvas-footnote">
+      Press and drag to draw — the ink follows your cursor. Complete the missing edges of the cube using the given face(s) as your reference — turn on vanishing points above if you need a hint.
+    </div>
+    <div class="legend">
+      <span><i class="swatch" style="background:#111827"></i> given plane</span>
+      <span><i class="swatch" style="background:#4f46e5;opacity:.5"></i> vanishing-point hints</span>
+      <span><i class="swatch" style="background:#f97316"></i> your lines</span>
+      <span><i class="swatch" style="background:#16a34a"></i> solution (after grading)</span>
+    </div>
+  </div>
+
+  <!-- Right: instructions, mode toggle, dashboard -->
+  <div style="display:flex; flex-direction:column; gap:20px;">
+
+    <div class="card instructions">
+      <p class="section-title">The Challenge</p>
+      <p id="challengeGiven">You're given one full face of the cube, already drawn as a solid, shaded plane.</p>
+      <p id="challengeRemaining">Complete the rest by drawing the missing edges of the remaining visible face(s), using the vanishing points and the given plane's corners as your reference.</p>
+      <ul id="challengeEdgeList"></ul>
+    </div>
+
+    <div class="card">
+      <p class="section-title">Evaluation Mode</p>
+      <div class="mode-row">
+        <span class="mode-label" id="modeLeftLabel">Local Math</span>
+        <label class="switch">
+          <input type="checkbox" id="modeToggle" />
+          <span class="track-label left">MATH</span>
+          <span class="track-label right">AI</span>
+          <span class="knob"></span>
+        </label>
+        <span class="mode-label" id="modeRightLabel">OpenAI Vision</span>
+      </div>
+      <p class="mode-help" id="modeHelp">Instant, offline geometric scoring against the exact target coordinates.</p>
+    </div>
+
+    <div class="card">
+      <p class="section-title">Score Dashboard</p>
+      <div class="dash-top">
+        <div class="score-ring" id="scoreRing" style="--pct:0">
+          <div class="inner">
+            <div class="num" id="scoreValue">–</div>
+            <div class="lbl">SCORE</div>
+          </div>
+        </div>
+        <div class="stat-row">
+          <div class="stat">Best<strong id="bestScoreValue">–</strong></div>
+          <div class="stat">Attempts<strong id="attemptsValue">0</strong></div>
+        </div>
+      </div>
+      <div class="feedback-box" id="feedbackText">Draw your cube and click “Evaluate Drawing” to get feedback.</div>
+      <div class="history" id="historyRow"></div>
+    </div>
+
+  </div>
+</main>
+
+<script src="../static/main.js"></script>
+</body>
+</html>

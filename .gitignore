@@ -1,0 +1,25 @@
+# Secrets
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.Python
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Flask
+instance/
+.flaskenv
+
+# OS / editor cruft
+.DS_Store
+.vscode/
+.idea/
+*.log
+
+.__afs*

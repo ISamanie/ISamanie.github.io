@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio | ECE Undergrad</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+    <header>
+        <div class="header-brand">
+            <div class="header-logo">ECE</div>
+            Ian Samaniego
+        </div>
+        <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()">
+            <span id="themeIcon"></span> <span id="themeText">Light Mode</span>
+        </button>
+    </header>
+
+    <div class="container">
+        <aside class="sidebar">
+            <div class="avatar"></div>
+            <div class="names">
+                <h1>Ian Samaniego</h1>
+                <h2>isamanie-ece</h2>
+            </div>
+
+            <div class="contact-info">
+                <ul>
+                    <li>
+                        <svg class="contact-icon" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                            <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                        </svg>
+                        Carnegie Mellon University
+                    </li>
+                    <li>
+                        <svg class="contact-icon" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/>
+                            <circle cx="12" cy="10" r="3"/>
+                        </svg>
+                        Pittsburgh, PA
+                    </li>
+                    <li>
+                        <svg class="contact-icon" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect width="20" height="16" x="2" y="4" rx="2"/>
+                            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                        </svg>
+                        <a href="mailto:isamanie@andrew.cmu.edu">isamanie@andrew.cmu.edu</a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="bio">
+                Undergraduate Electrical and Computer Engineering student at Carnegie Mellon University. Focused on computer architecture, VLSI design, real-time embedded systems, and hardware-software co-design.
+            </div>
+            <a href="example_resume.txt" class="btn-edit">Download Resume</a>
+        </aside>
+
+        <main class="main-content">
+            <h2 class="section-header">Pinned Projects</h2>
+            <div class="projects-grid">
+                
+                <div class="project-card" onclick="openProjectModal(
+                    '5stage-pipeline-cpu', 
+                    'https://github.com/janedoe-ece/5stage-pipeline-cpu',
+                    'src/ core.sv, alu.sv, hazard_unit.sv',
+                    'Designed and implemented a 5-stage pipelined microprocessor core. Includes full hazard detection, data forwarding logic, branch prediction, and memory hierarchy integration using SystemVerilog.'
+                )">
+                    <div class="project-title">
+                        <svg viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M2 2.5A2.5 2.5 0 014.5 0h8.75a.75.75 0 01.75.75v12.5a.75.75 0 01-.75.75h-2.5a.75.75 0 110-1.5h1.75v-2h-8a1 1 0 00-.714 1.7.75.75 0 01-1.072 1.05A2.495 2.495 0 012 11.5v-9zm10.5-1V9h-8c-.356 0-.694.074-1 .208V2.5a1 1 0 011-1h8zM5 12.25v3.25a.25.25 0 00.4.2l1.45-1.087a.25.25 0 01.3 0L8.6 15.7a.25.25 0 00.4-.2v-3.25a.25.25 0 00-.25-.25h-3.5a.25.25 0 00-.25.25z"></path></svg>
+                        <span>5stage-pipeline-cpu</span>
+                        <span class="project-badge">Public</span>
+                    </div>
+                    <p class="project-desc">Designed and implemented a 5-stage pipelined microprocessor core. Includes full hazard detection, data forwarding logic, branch prediction, and memory hierarchy integration using SystemVerilog.</p>
+                    <div class="project-meta">
+                        <span><span class="lang-dot" style="background-color: var(--verilog-color);"></span>SystemVerilog</span>
+                    </div>
+                </div>
+
+                <div class="project-card" onclick="openProjectModal(
+                    'usb-protocol-handler', 
+                    'https://github.com/janedoe-ece/usb-protocol-handler',
+                    'rtl/ usb_sie.sv, crc16.sv, bit_stuffer.sv',
+                    'Implemented a USB 2.0 Serial Interface Engine in SystemVerilog, featuring differential signaling, bit stuffing, CRC encoding/decoding, and error detection for reliable high-speed data transmission.'
+                )">
+                    <div class="project-title">
+                        <svg viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M2 2.5A2.5 2.5 0 014.5 0h8.75a.75.75 0 01.75.75v12.5a.75.75 0 01-.75.75h-2.5a.75.75 0 110-1.5h1.75v-2h-8a1 1 0 00-.714 1.7.75.75 0 01-1.072 1.05A2.495 2.495 0 012 11.5v-9zm10.5-1V9h-8c-.356 0-.694.074-1 .208V2.5a1 1 0 011-1h8zM5 12.25v3.25a.25.25 0 00.4.2l1.45-1.087a.25.25 0 01.3 0L8.6 15.7a.25.25 0 00.4-.2v-3.25a.25.25 0 00-.25-.25h-3.5a.25.25 0 00-.25.25z"></path></svg>
+                        <span>usb-protocol-handler</span>
+                        <span class="project-badge">Public</span>
+                    </div>
+                    <p class="project-desc">Implemented a USB 2.0 Serial Interface Engine in SystemVerilog, featuring differential signaling, bit stuffing, CRC encoding/decoding, and error detection for reliable high-speed data transmission.</p>
+                    <div class="project-meta">
+                        <span><span class="lang-dot" style="background-color: var(--verilog-color);"></span>SystemVerilog</span>
+                    </div>
+                </div>
+
+                <div class="project-card" onclick="openProjectModal(
+                    'sram-array-design', 
+                    'https://github.com/janedoe-ece/sram-array-design',
+                    'layout/ sram_6t.gds, schematics/ sense_amp.sch',
+                    'Designed a high-density, low-power SRAM memory array. Includes transistor-level schematic design, 6T SRAM cell layout, sense amplifier optimization, and Cadence Virtuoso DRC/LVS validation.'
+                )">
+                    <div class="project-title">
+                        <svg viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M2 2.5A2.5 2.5 0 014.5 0h8.75a.75.75 0 01.75.75v12.5a.75.75 0 01-.75.75h-2.5a.75.75 0 110-1.5h1.75v-2h-8a1 1 0 00-.714 1.7.75.75 0 01-1.072 1.05A2.495 2.495 0 012 11.5v-9zm10.5-1V9h-8c-.356 0-.694.074-1 .208V2.5a1 1 0 011-1h8zM5 12.25v3.25a.25.25 0 00.4.2l1.45-1.087a.25.25 0 01.3 0L8.6 15.7a.25.25 0 00.4-.2v-3.25a.25.25 0 00-.25-.25h-3.5a.25.25 0 00-.25.25z"></path></svg>
+                        <span>sram-array-design</span>
+                        <span class="project-badge">Public</span>
+                    </div>
+                    <p class="project-desc">Designed a high-density, low-power SRAM memory array. Includes transistor-level schematic design, 6T SRAM cell layout, sense amplifier optimization, and Cadence Virtuoso DRC/LVS validation.</p>
+                    <div class="project-meta">
+                        <span><span class="lang-dot" style="background-color: var(--hardware-color);"></span>VLSI / Cadence</span>
+                    </div>
+                </div>
+
+                <div class="project-card" onclick="openProjectModal(
+                    'custom-rtos-kernel', 
+                    'https://github.com/janedoe-ece/custom-rtos-kernel',
+                    'kernel/ scheduler.c, context_switch.s, mutex.c',
+                    'Built a preemptive Real-Time Operating System from scratch. Written in C and ARM assembly featuring priority scheduling, context switching, mutexes, condition variables, and peripheral drivers.'
+                )">
+                    <div class="project-title">
+                        <svg viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M2 2.5A2.5 2.5 0 014.5 0h8.75a.75.75 0 01.75.75v12.5a.75.75 0 01-.75.75h-2.5a.75.75 0 110-1.5h1.75v-2h-8a1 1 0 00-.714 1.7.75.75 0 01-1.072 1.05A2.495 2.495 0 012 11.5v-9zm10.5-1V9h-8c-.356 0-.694.074-1 .208V2.5a1 1 0 011-1h8zM5 12.25v3.25a.25.25 0 00.4.2l1.45-1.087a.25.25 0 01.3 0L8.6 15.7a.25.25 0 00.4-.2v-3.25a.25.25 0 00-.25-.25h-3.5a.25.25 0 00-.25.25z"></path></svg>
+                        <span>custom-rtos-kernel</span>
+                        <span class="project-badge">Public</span>
+                    </div>
+                    <p class="project-desc">Built a preemptive Real-Time Operating System from scratch. Written in C and ARM assembly featuring priority scheduling, context switching, mutexes, condition variables, and peripheral drivers.</p>
+                    <div class="project-meta">
+                        <span><span class="lang-dot" style="background-color: var(--c-color);"></span>C / Assembly</span>
+                    </div>
+                </div>
+                <div class="project-card" onclick="openProjectModal(
+                    'CrossyRoad', 
+                    'CrossyRoad/index.html', 
+                    'index.html, style.css, script.js',
+                    'A web-based recreation of Crossy Road built primarily with HTML and JavaScript. Developed with AI code generation assistance as a project for 15-113 at CMU. Click on github link to play game in browser'
+                )">
+                    <div class="project-title">
+                        <svg viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M2 2.5A2.5 2.5 0 014.5 0h8.75a.75.75 0 01.75.75v12.5a.75.75 0 01-.75.75h-2.5a.75.75 0 110-1.5h1.75v-2h-8a1 1 0 00-.714 1.7.75.75 0 01-1.072 1.05A2.495 2.495 0 012 11.5v-9zm10.5-1V9h-8c-.356 0-.694.074-1 .208V2.5a1 1 0 011-1h8zM5 12.25v3.25a.25.25 0 00.4.2l1.45-1.087a.25.25 0 01.3 0L8.6 15.7a.25.25 0 00.4-.2v-3.25a.25.25 0 00-.25-.25h-3.5a.25.25 0 00-.25.25z"></path></svg>
+                        <span>CrossyRoad</span>
+                        <span class="project-badge">Public</span>
+                    </div>
+                    <p class="project-desc">A web-based recreation of Crossy Road built primarily with HTML and JavaScript. Developed with AI code generation assistance as a project for 15-113 at CMU. Click on github link to play in browser.</p>
+                    <div class="project-meta">
+                        <span><span class="lang-dot" style="background-color: var(--hardware-color);"></span>HTML</span>
+                    </div>
+                </div>
+                
+                <div class="project-card" onclick="openProjectModal(
+                    'Perspective Trainer', 
+                    'PerspectiveTrainer/templates/index.html', 
+                    'index.html, app.py, script.js',
+                    'A perspective drawing tool built with HTML and Python that presents one face of a 3D cube and asks users to draw the remaining visible faces. Drawings can be graded using lightweight local math in JavaScript or submitted for in-depth feedback from an AI art critic powered by Flask and OpenAI. Click on the GitHub link to view and access the project.'
+                )">
+                    <div class="project-title">
+                        <svg viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M2 2.5A2.5 2.5 0 014.5 0h8.75a.75.75 0 01.75.75v12.5a.75.75 0 01-.75.75h-2.5a.75.75 0 110-1.5h1.75v-2h-8a1 1 0 00-.714 1.7.75.75 0 01-1.072 1.05A2.495 2.495 0 012 11.5v-9zm10.5-1V9h-8c-.356 0-.694.074-1 .208V2.5a1 1 0 011-1h8zM5 12.25v3.25a.25.25 0 00.4.2l1.45-1.087a.25.25 0 01.3 0L8.6 15.7a.25.25 0 00.4-.2v-3.25a.25.25 0 00-.25-.25h-3.5a.25.25 0 00-.25.25z"></path></svg>
+                        <span>Perspective Trainer</span>
+                        <span class="project-badge">Public</span>
+                    </div>
+                    <p class="project-desc">Interactive HTML and Python application that helps users practice 3D cube perspective. Supports instant local canvas scoring or detailed AI-powered artistic critique.</p>
+                    <div class="project-meta">
+                        <span><span class="lang-dot" style="background-color: #3572A5;"></span>Python / HTML</span>
+                    </div>
+                </div>
+            </div>
+            <h2 class="section-header extra-space">Skills</h2>
+        
+            <div class="skills-box">
+                <div class="skill-category">
+                    <h3>Hardware & Architecture</h3>
+                    <div class="badges-group">
+                        <span class="badge">SystemVerilog</span>
+                        <span class="badge">Verilog</span>
+                        <span class="badge">FPGA (Quartus)</span>
+                        <span class="badge">Cadence Virtuoso</span>
+                        <span class="badge">Gem5 simulator</span>
+                    </div>
+                </div>
+            
+                <div class="skill-category">
+                    <h3>Software & Embedded Systems</h3>
+                    <div class="badges-group">
+                        <span class="badge">C / C++</span>
+                        <span class="badge">ARM Assembly</span>
+                        <span class="badge">Python</span>
+                        <span class="badge">Git / GitHub</span>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="section-header extra-space">Interests</h2>
+            <div class="interests-box">
+                <ul class="interests-list">
+                <li><strong>Rock Climbing:</strong> Active member of the CMU Rock Climbing Club, frequently tackling indoor bouldering and top-rope routes around Pittsburgh.</li>
+                <li><strong>Visual Arts & Painting:</strong> Longtime traditional artist focused on sketchwork and acrylic painting, exploring creative expression off the screen.</li>
+            </ul>
+            </div>
+        </main>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModalOnOverlay(event)">
+        <div class="modal-container">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <svg viewBox="0 0 16 16" width="16" height="16" fill="var(--text-secondary)"><path fill-rule="evenodd" d="M2 2.5A2.5 2.5 0 014.5 0h8.75a.75.75 0 01.75.75v12.5a.75.75 0 01-.75.75h-2.5a.75.75 0 110-1.5h1.75v-2h-8a1 1 0 00-.714 1.7.75.75 0 01-1.072 1.05A2.495 2.495 0 012 11.5v-9zm10.5-1V9h-8c-.356 0-.694.074-1 .208V2.5a1 1 0 011-1h8zM5 12.25v3.25a.25.25 0 00.4.2l1.45-1.087a.25.25 0 01.3 0L8.6 15.7a.25.25 0 00.4-.2v-3.25a.25.25 0 00-.25-.25h-3.5a.25.25 0 00-.25.25z"></path></svg>
+                    <span id="modalProjectName">Project Title</span>
+                </div>
+                <div class="modal-actions">
+                    <a id="modalExternalLink" href="#" target="_blank" rel="noopener noreferrer" class="external-link-btn">Open directly on GitHub ↗</a>
+                    <button class="close-modal-btn" onclick="closeProjectModal()">&times;</button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <ul class="file-list" id="modalFileList">
+                    </ul>
+                <div class="readme-box">
+                    <div class="readme-header">📄 README.md</div>
+                    <div id="modalReadmeContent">
+                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Website design inspired by <a href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub</a>. Written with code generation assistance from <strong>Gemini Pro</strong>.</p>
+    </footer>
+
+    <script src="main.js"></script>
+</body>
+</html>

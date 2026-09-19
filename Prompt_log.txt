@@ -1,0 +1,43 @@
+-Create a portfoliio website for me in the style of the github home dashboard, included a section for projects, contanct information, and an about me section. I am an undergrad studying electrical and computer engineering use that to start the about me section.
+
+*** Gemini returns most of the visual elements, including boxes for projects similar to GitHub ***
+
+-add a section at the bottom crediting gemini pro for writing the code, also write that the website is inspired by github. Add carnegie mellon university as my institution.
+
+*** Gemini returns ***
+
+I added information about some of my projects
+
+- Add a way to change from dark to light mode
+
+*** Gemini returns ***
+I remove sun and moon icons for the dark/light mode functionality as I didn't fit the look i was going for
+
+- make it so that when you click a project it exands the window that displays the actual github page
+
+*** Gemini returns ***
+
+Feature does not work due to some bot protections git has to avoid attacks
+
+Instead i ask
+- Instead create a fake GitHub page when users click on the projects similar to the GitHub file system, include features written in the project descriptions for example hazardDetection.sv for the cpu.
+
+*** Gemini Returns ***
+
+- Remove the blur when you open the file system & add a placeholder for a background image to bee added, make the opacity somewhat see-through.
+
+*** Gemini Returns ***
+
+I add a background image and mess with the opacity numbers.
+
+- Add placeholders for my skills and interest
+
+*** Gemini Returns ***
+
+I fill in the information and ask for help polishing my language.
+
+- Fix these logos (included an image of the email box and university logo) also move it from underneath my descriptions to above.
+
+
+*** Gemini returns ***
+I fill in missing sections, i purposely left the resume section empty for filling out later.
