@@ -21,7 +21,7 @@ load_dotenv()  # pulls OPENAI_API_KEY (and OPENAI_MODEL, if set) from .env
 app = Flask(__name__)
 
 # 1. DEFINE YOUR CLOUD FRONTEND URL
-ALLOWED_ORIGIN = "https://isamanie-github-io.onrender.com"
+ALLOWED_ORIGIN = "https://isamanie.github.io"
 
 # 2. RESTRICT CORS TO YOUR FRONTEND
 if _CORS_AVAILABLE:
