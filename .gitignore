@@ -21,5 +21,3 @@ instance/
 .vscode/
 .idea/
 *.log
-
-.__afs*
