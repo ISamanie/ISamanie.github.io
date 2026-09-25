@@ -579,11 +579,12 @@
         expectedNewEdges: challenge.targets.length,
         userStrokeCount: userStrokes.length,
       };
-      const res = await fetch('http://127.0.0.1:5000/evaluate', {
+      const res = await fetch('https://isamanie-github-io.onrender.com/evaluate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ image, context }),
       });
+
       const data = await res.json();
       if (!res.ok || data.error){
         renderFeedback(`⚠️ ${data.error || 'The AI evaluator is unavailable.'}`, null, true);

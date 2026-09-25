@@ -1,16 +1,3 @@
-"""
-Perspective Cube Trainer — Flask backend
-CMU 15-113 · HW3: Web API Integration
-
-Serves the interactive perspective-drawing trainer and exposes a single
-POST /evaluate endpoint that forwards a snapshot of the student's canvas
-to OpenAI's gpt-4o-mini vision model for a geometric-accuracy critique.
-
-The OpenAI API key is read exclusively from the server-side environment
-(OPENAI_API_KEY) via python-dotenv / os.environ and is NEVER sent to,
-stored in, or readable from the frontend.
-"""
-
 import base64
 import json
 import os
@@ -18,7 +5,7 @@ import os
 from dotenv import load_dotenv
 from flask import Flask, jsonify, render_template, request
 
-# Import flask_cors with a fallback to keep local mode working if not installed
+# Import flask_cors with a fallback
 try:
     from flask_cors import CORS
     _CORS_AVAILABLE = True
@@ -32,14 +19,18 @@ except ImportError:
 load_dotenv()  # pulls OPENAI_API_KEY (and OPENAI_MODEL, if set) from .env
 
 app = Flask(__name__)
-if _CORS_AVAILABLE:
-    CORS(app)  # Enables Cross-Origin Resource Sharing for local HTML files
 
+# 1. DEFINE YOUR CLOUD FRONTEND URL
+ALLOWED_ORIGIN = "https://isamanie-github-io.onrender.com"
+
+# 2. RESTRICT CORS TO YOUR FRONTEND
+if _CORS_AVAILABLE:
+    CORS(app, origins=[ALLOWED_ORIGIN])
 
 @app.after_request
-def allow_local_file_requests(response):
-    """Allow a locally opened HTML file to call the Flask API."""
-    response.headers.setdefault("Access-Control-Allow-Origin", "*")
+def allow_frontend_requests(response):
+    """Allow the cloud-hosted frontend to call the Flask API."""
+    response.headers["Access-Control-Allow-Origin"] = ALLOWED_ORIGIN
     response.headers.setdefault("Access-Control-Allow-Headers", "Content-Type")
     response.headers.setdefault("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
     return response
@@ -47,9 +38,7 @@ def allow_local_file_requests(response):
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
 
-# The OpenAI SDK (and its exception classes) are only imported/instantiated
-# if a key is present. If the package itself is missing we still want the
-# app to boot so the "Local Math" mode keeps working.
+# The OpenAI SDK setup remains exactly the same
 try:
     from openai import (
         APIConnectionError,
@@ -61,7 +50,7 @@ try:
 
     _client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
     _OPENAI_SDK_AVAILABLE = True
-except ImportError:  # pragma: no cover - only hit if openai isn't installed
+except ImportError: 
     _client = None
     _OPENAI_SDK_AVAILABLE = False
     APIConnectionError = AuthenticationError = RateLimitError = APIStatusError = Exception
@@ -95,9 +84,8 @@ SYSTEM_PROMPT = (
 
 
 # ---------------------------------------------------------------------------
-# Routes
+# Routes (Remain exactly the same)
 # ---------------------------------------------------------------------------
-
 
 @app.route("/")
 def index():
@@ -117,7 +105,7 @@ def evaluate():
                 {
                     "error": (
                         "OPENAI_API_KEY is not configured on the server. "
-                        "Add it to your .env file (see .env.example) and restart the app."
+                        "Add it to your environment variables and restart the app."
                     )
                 }
             ),
@@ -148,7 +136,6 @@ def evaluate():
             400,
         )
 
-    # Sanity-check the base64 payload itself decodes cleanly before we ship it off.
     try:
         _, b64_part = image_data_url.split(",", 1)
         base64.b64decode(b64_part, validate=True)
@@ -181,14 +168,14 @@ def evaluate():
             response_format={"type": "json_object"},
         )
     except AuthenticationError:
-        return jsonify({"error": "OpenAI rejected the API key. Check OPENAI_API_KEY in your .env file."}), 502
+        return jsonify({"error": "OpenAI rejected the API key. Check OPENAI_API_KEY in your env config."}), 502
     except RateLimitError:
         return jsonify({"error": "OpenAI rate limit or quota exceeded. Please wait and try again."}), 502
     except APIConnectionError:
         return jsonify({"error": "Could not reach OpenAI's servers. Check your network connection."}), 502
     except APIStatusError as exc:
         return jsonify({"error": f"OpenAI API error (status {exc.status_code}): {exc.message}"}), 502
-    except Exception as exc:  # noqa: BLE001 - last-resort catch-all, surfaced to the user
+    except Exception as exc: 
         return jsonify({"error": f"Unexpected error contacting OpenAI: {exc}"}), 502
 
     # ---- Parse the model's response ----------------------------------------
@@ -208,5 +195,9 @@ def evaluate():
 
 
 if __name__ == "__main__":
-    # Bound to 0.0.0.0 to enable WSL -> Windows host access
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    # 3. USE DYNAMIC PORT FOR CLOUD DEPLOYMENTS
+    # Cloud providers inject the 'PORT' env variable. Fallback to 5000 for local testing.
+    port = int(os.environ.get("PORT", 5000))
+    
+    # Disable debug mode for production deployments
+    app.run(host="0.0.0.0", port=port, debug=False)
