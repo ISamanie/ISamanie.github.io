@@ -16,6 +16,9 @@ Vary the perspective of the starting face, ie move them closer to the vp to prac
  Implement a scoring algorithm that calculates distances from endpoints (of the cube), to the user lines to score the users submission.
 
  Create an ai scoring feature that is implemented in python and communicates with the html app to make calls to the OPENAI api to provide more in depth feedback on the user's technique. The html file should send the python script a snapshot of the users canvas and get a score and feedback in return.
-
+    - Debugged making sure I can run it locally before trying to host on render.
+    - Pushed to git and initialized the backend with requirements.txt
+    - I had to then update the accepted orgins and fetch urls inside these files to allow them to properly communicate with the render backend.
+ UI fixes/changes to make the website seem a bit less 'claude', but im not designer so it's a bit shoty.
 
 These werent all the prompts I used but are some of the most important ones in the trajectory of the project.

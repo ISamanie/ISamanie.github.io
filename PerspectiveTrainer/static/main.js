@@ -214,9 +214,11 @@
   // Rendering
   // ---------------------------------------------------------------------
   function drawBackground(c){
-    c.fillStyle = '#ffffff';
+    c.fillStyle = '#bb9457';
     c.fillRect(0, 0, W, H);
-    c.fillStyle = '#eef1f6';
+    
+    // Grid dots updated to the cream color for visibility against camel
+    c.fillStyle = '#ffe6a7';
     const step = 28;
     for (let x = step; x < W; x += step){
       for (let y = step; y < H; y += step){
@@ -227,6 +229,40 @@
     }
   }
 
+  function drawGivenFaces(c){
+    c.save();
+    challenge.givenFacePolygons.forEach(poly => {
+      c.beginPath();
+      c.moveTo(poly[0].x, poly[0].y);
+      for (let i = 1; i < poly.length; i++) c.lineTo(poly[i].x, poly[i].y);
+      c.closePath();
+      
+      // Fill the given faces with the dark coffee color
+      c.fillStyle = '#432818';
+      c.fill();
+    });
+
+    // Draw the contour edges in solid black
+    c.strokeStyle = '#000000';
+    c.lineWidth = 4;
+    c.lineCap = 'round';
+    challenge.givenEdges.forEach(e => {
+      c.beginPath();
+      c.moveTo(e.p1.x, e.p1.y);
+      c.lineTo(e.p2.x, e.p2.y);
+      c.stroke();
+    });
+
+    // Make the corner dots black to match the edges
+    c.fillStyle = '#000000';
+    challenge.givenVertexPoints.forEach(p => {
+      c.beginPath();
+      c.arc(p.x, p.y, 4, 0, Math.PI * 2);
+      c.fill();
+    });
+    c.restore();
+  }
+  
   function drawHorizonAndVPs(c){
     c.save();
     c.strokeStyle = '#9ca3af';
@@ -263,36 +299,6 @@
       c.stroke();
     });
     c.setLineDash([]);
-    c.restore();
-  }
-
-  function drawGivenFaces(c){
-    c.save();
-    challenge.givenFacePolygons.forEach(poly => {
-      c.beginPath();
-      c.moveTo(poly[0].x, poly[0].y);
-      for (let i = 1; i < poly.length; i++) c.lineTo(poly[i].x, poly[i].y);
-      c.closePath();
-      c.fillStyle = 'rgba(79,70,229,0.08)';
-      c.fill();
-    });
-
-    c.strokeStyle = '#111827';
-    c.lineWidth = 4;
-    c.lineCap = 'round';
-    challenge.givenEdges.forEach(e => {
-      c.beginPath();
-      c.moveTo(e.p1.x, e.p1.y);
-      c.lineTo(e.p2.x, e.p2.y);
-      c.stroke();
-    });
-
-    c.fillStyle = '#111827';
-    challenge.givenVertexPoints.forEach(p => {
-      c.beginPath();
-      c.arc(p.x, p.y, 4, 0, Math.PI * 2);
-      c.fill();
-    });
     c.restore();
   }
 
