@@ -55,18 +55,26 @@
       <div class="mode-row">
         <span class="mode-label" id="modeLeftLabel">Local Math</span>
         <label class="switch">
-          <input type="checkbox" id="modeToggle" />
+          <!-- Added 'checked' to make the AI mode the visual default -->
+          <input type="checkbox" id="modeToggle" checked />
           <span class="track-label left">MATH</span>
           <span class="track-label right">AI</span>
           <span class="knob"></span>
         </label>
-        <span class="mode-label" id="modeRightLabel">OpenAI Vision</span>
+        <span class="mode-label" id="modeRightLabel">daVinci(AI)</span>
       </div>
-      <p class="mode-help" id="modeHelp">Instant, offline geometric scoring against the exact target coordinates.</p>
+      <p class="mode-help" id="modeHelp">Sends a snapshot of your canvas to gpt-4o-mini for a geometric critique.</p>
     </div>
 
     <div class="card">
       <p class="section-title">Score Dashboard</p>
+      
+      <div class="feedback-box" id="feedbackText">Draw your cube and click “Evaluate Drawing” to get feedback.</div>
+
+      <div style="text-align: center; margin: 10px 0;">
+        <img src="../static/davinci.png" alt="daVinci Guide" style="width: 250px; height: auto; border-radius: 10px; margin-bottom: 12px; display: block; margin-left: auto; margin-right: auto;" />
+      </div>
+
       <div class="dash-top">
         <div class="score-ring" id="scoreRing" style="--pct:0">
           <div class="inner">
@@ -79,7 +87,6 @@
           <div class="stat">Attempts<strong id="attemptsValue">0</strong></div>
         </div>
       </div>
-      <div class="feedback-box" id="feedbackText">Draw your cube and click “Evaluate Drawing” to get feedback.</div>
       <div class="history" id="historyRow"></div>
     </div>
 

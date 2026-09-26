@@ -15,7 +15,7 @@
   let solutionVisible = false;
   let hasEvaluated = false;   // whether an Evaluate has run yet (gates the solution toggle)
   let lastLocalResult = null; // {score, details}
-  let mode = 'local';         // 'local' | 'ai'
+  let mode = 'ai';         // 'local' | 'ai'
   let bestScore = null;
   let attempts = 0;
   let history = [];           // [{score, mode}]
