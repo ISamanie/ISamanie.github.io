@@ -19,6 +19,9 @@ Vary the perspective of the starting face, ie move them closer to the vp to prac
     - Debugged making sure I can run it locally before trying to host on render.
     - Pushed to git and initialized the backend with requirements.txt
     - I had to then update the accepted orgins and fetch urls inside these files to allow them to properly communicate with the render backend.
+    - Update the requirements.txt file to include all dependancies
+    - I also had incorrectly setup the render backend, I had forget to set the language as python, causing it not to build properly
+  
  UI fixes/changes to make the website seem a bit less 'claude', but im not designer so it's a bit shoty.
 
 These werent all the prompts I used but are some of the most important ones in the trajectory of the project.
