@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OoO Simulator with Data Flow Animations</title>
+<style>
+    /* CSS Variables for color theming */
+    :root {
+        --bg: #1e1e1e;
+        --side: #252526;
+        --bar: #333;
+        --bd: #3c3c3c;
+        --tx: #ccc;
+        --dim: #858585;
+        --ac: #3794ff; /* Action / Fetch */
+        --ok: #4ec9b0; /* Commit / OK */
+        --wn: #dcdcaa; /* Issue / Warning */
+        --er: #f48771; /* Execute / Error */
+    }
+
+    * { box-sizing: border-box; }
+    
+    html, body {
+        height: 100%; margin: 0;
+        background: var(--bg); color: var(--tx);
+        font: 13px "Segoe UI", system-ui, sans-serif;
+    }
+
+    .monospace {
+        font-family: Consolas, "Courier New", monospace;
+        font-size: 12px;
+    }
+
+    /* Grid Layout */
+    #app {
+        display: grid; height: 100%; position: relative;
+        grid-template-columns: 210px 1fr 300px;
+        grid-template-rows: 1fr 210px;
+    }
+
+    /* Sidebar */
+    #sidebar {
+        grid-row: 1 / 3; background: var(--side);
+        border-right: 1px solid var(--bd); overflow: auto;
+    }
+    #sidebar h4 { margin: 0; padding: 8px 12px; font-weight: 600; color: var(--dim); }
+    
+    .file-tab {
+        padding: 3px 16px; cursor: pointer; font-family: Consolas, monospace;
+    }
+    .file-tab:hover { background: #2a2d2e; }
+    .file-tab.active { background: #37373d; color: #fff; }
+    
+    #summary {
+        padding: 8px 12px; color: var(--dim); line-height: 1.5;
+        border-top: 1px solid var(--bd); margin-top: 10px;
+    }
+
+    /* Main Editor / Visualizer Area */
+    #editor { overflow: auto; padding: 0; position: relative; }
+    #tabs {
+        background: var(--side); padding: 6px 14px;
+        border-bottom: 1px solid var(--bd); position: sticky; top: 0;
+        display: flex; gap: 14px; align-items: center; z-index: 10;
+    }
+    #tabs b { color: #fff; font-family: Consolas, monospace; }
+    #body-content { padding: 12px; display: grid; gap: 12px; }
+
+    /* Panels & Tables */
+    .grid-container {
+        display: grid; gap: 12px;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+    .panel {
+        border: 1px solid var(--bd); background: #1b1b1c; padding: 8px;
+        position: relative;
+    }
+    .panel h5 { margin: 0 0 6px; color: var(--ac); font-size: 12px; font-weight: 600; }
+    
+    table { border-collapse: collapse; width: 100%; }
+    td, th {
+        border-bottom: 1px solid #2a2a2a; padding: 3px 5px;
+        text-align: left; font-weight: 400;
+    }
+    th { color: var(--dim); }
+
+    /* Status Colors */
+    .status-dim { color: var(--dim); }
+    .status-warn { color: var(--wn); }
+    .status-ok { color: var(--ok); }
+    .status-action { color: var(--ac); }
+    .status-squashed { color: var(--er); text-decoration: line-through; }
+    
+    .highlight-row { background: #264f78; }
+
+    /* Terminal */
+    #terminal {
+        grid-column: 2; border-top: 1px solid var(--bd);
+        background: var(--bg); display: flex; flex-direction: column; min-height: 0;
+    }
+    #terminal .toolbar {
+        display: flex; gap: 6px; padding: 4px 10px;
+        background: var(--side); align-items: center;
+    }
+    #terminal textarea {
+        flex: 1; background: #1b1b1c; color: var(--tx);
+        border: 1px solid var(--bd); margin: 6px 10px;
+        padding: 6px; resize: none; min-height: 0;
+    }
+    
+    #log { flex: 1; overflow: auto; padding: 6px 12px; white-space: pre-wrap; line-height: 1.5; }
+    #code-area { display: flex; min-height: 0; flex: 1; }
+    #code-area textarea { flex: 1; }
+    #code-area #log { flex: 1; }
+
+    /* Buttons */
+    button { background: #0e639c; color: #fff; border: 0; padding: 3px 10px; cursor: pointer; }
+    button:hover { background: #1177bb; }
+    button.secondary { background: #3a3d41; }
+
+    /* Chat UI */
+    #chat {
+        grid-row: 1 / 3; grid-column: 3; border-left: 1px solid var(--bd);
+        background: var(--side); display: flex; flex-direction: column; min-height: 0;
+    }
+    #chat-messages { flex: 1; overflow: auto; padding: 10px; }
+    .msg-user, .msg-ai { margin-bottom: 10px; line-height: 1.45; white-space: pre-wrap; }
+    .msg-user { color: #fff; }
+    .msg-ai { color: var(--tx); border-left: 2px solid var(--ac); padding-left: 8px; }
+    
+    #chat-input-area { display: flex; gap: 6px; padding: 8px; border-top: 1px solid var(--bd); }
+    #chat-input-area input { flex: 1; background: #3c3c3c; border: 1px solid var(--bd); color: #fff; padding: 5px; }
+
+    /* CSS Row Flash Animations */
+    @keyframes flash-fetch { 0% { background-color: rgba(55, 148, 255, 0.4); transform: translateX(-2px); } 100% { background-color: transparent; transform: translateX(0); } }
+    @keyframes flash-issue { 0% { background-color: rgba(220, 220, 170, 0.4); transform: translateX(2px); } 100% { background-color: transparent; transform: translateX(0); } }
+    @keyframes flash-exec { 0% { background-color: rgba(244, 135, 113, 0.4); transform: scale(1.02); } 100% { background-color: transparent; transform: scale(1); } }
+    
+    .anim-fetch { animation: flash-fetch 0.4s ease-out; }
+    .anim-issue { animation: flash-issue 0.4s ease-out; }
+    .anim-exec  { animation: flash-exec 0.4s ease-out; }
+
+    /* FLYING BOX OVERLAY */
+    #animation-layer {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        pointer-events: none; overflow: hidden; z-index: 1000;
+    }
+
+    .fly-box {
+        position: absolute; width: 22px; height: 22px;
+        color: #1e1e1e; font-size: 10px; font-weight: bold; font-family: monospace;
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease-in;
+        opacity: 0.9;
+    }
+
+    @media(max-width: 900px) {
+        #app { grid-template-columns: 1fr; grid-template-rows: auto auto 260px auto; }
+        #sidebar, #chat { grid-row: auto; grid-column: 1; }
+        #terminal { grid-column: 1; }
+    }
+</style>
+</head>
+<body>
+<div id="app">
+    <div id="sidebar">
+        <h4>TEMP_FOLDER</h4>
+        <div id="files-list"></div>
+        <div id="summary" class="monospace"></div>
+    </div>
+    
+    <div id="editor">
+        <div id="tabs"></div>
+        <div id="body-content"></div>
+    </div>
+    
+    <div id="terminal">
+        <div class="toolbar">
+            <span id="terminal-title">Terminal</span>
+            <span style="flex:1"></span>
+            <button id="btn-load">Load</button>
+            <button id="btn-step">Step</button>
+            <button id="btn-run">Run</button>
+            <button id="btn-reset" class="secondary">Reset</button>
+        </div>
+        <div id="code-area">
+            <textarea id="src-code" class="monospace" spellcheck="false"></textarea>
+            <div id="log" class="monospace"></div>
+        </div>
+    </div>
+    
+    <div id="chat">
+        <div class="toolbar" style="padding: 8px 12px; color: var(--dim);">Chat</div>
+        <div id="chat-messages">
+            <div class="msg-ai">Ask about any feature of the design...</div>
+        </div>
+        <div id="chat-input-area">
+            <input id="chat-input" placeholder="Ask about the design">
+            <button id="btn-send">Send</button>
+        </div>
+    </div>
+    <!-- Layer for flying instructions -->
+    <div id="animation-layer"></div>
+</div>
+
+<script>
+// --- Constants & Config ---
+const WIDTH = 4, ROB_SIZE = 16, IQ_SIZE = 8, NUM_PHYSICAL_REGS = 16, NUM_ARCH_REGS = 8, MAX_INSTRUCTIONS = 16;
+const $ = id => document.getElementById(id);
+const FILES = ['top.sv', 'fetch.sv', 'rru.sv', 'issue_queue.sv', 'rob.sv', 'prf.sv', 'execution_units.sv'];
+
+const INFO = { /* Omitted bulky info for space, same as previous */ 
+    'top.sv': { title: 'Whole pipeline overview.', alts: [] },
+    'fetch.sv': { title: 'Fetch Unit.', alts: [] },
+    'rru.sv': { title: 'Register Rename.', alts: [] },
+    'issue_queue.sv': { title: 'Issue Queue.', alts: [] },
+    'rob.sv': { title: 'Reorder Buffer.', alts: [] },
+    'prf.sv': { title: 'Physical Register File.', alts: [] },
+    'execution_units.sv': { title: 'Execution Lanes.', alts: [] }
+};
+
+const DEFAULT_ASM = 
+`li r1, 5
+li r2, 0
+li r3, 1
+loop:
+add r2, r2, r1
+mul r4, r2, r3
+addi r1, r1, -1
+bne r1, r0, loop
+add r5, r2, r4`;
+
+// --- CPU State ---
+let cpu, currentFile = 'top.sv', runTimer = null;
+
+function initSimulation(keepProgram = false) {
+    const program = keepProgram ? cpu.program : [];
+    cpu = {
+        cycle: 0, pc: 0, instIdCounter: 0, program: program,
+        rob: Array(ROB_SIZE).fill(null), robHead: 0, robCount: 0, iq: [], execLanes: [],
+        pregState: Array(NUM_PHYSICAL_REGS).fill(0).map((_, i) => i < NUM_ARCH_REGS ? 3 : 0),
+        pregValues: Array(NUM_PHYSICAL_REGS).fill(0),
+        speculativeRAT: [...Array(NUM_ARCH_REGS).keys()],
+        architecturalRAT: [...Array(NUM_ARCH_REGS).keys()],
+        stall: false, retiredCount: 0, flushCount: 0, stallReason: '', fetchGroup: [],
+        anim: { fetched: [], issued: [], executed: [], committed: [] }
+    };
+}
+
+function writeLog(text) {
+    const logEl = $('log'); logEl.textContent += text + '\n'; logEl.scrollTop = 1e9;
+}
+
+// --- Assembly Parser (Minified logic) ---
+function parseAssembly() {
+    const parsedInsts = [], labels = {}; let instCount = 0;
+    for (const rawLine of $('src-code').value.split('\n')) {
+        let line = rawLine.split('#')[0].trim(); if (!line) continue;
+        let match; while ((match = line.match(/^(\w+):\s*(.*)$/))) { labels[match[1]] = instCount; line = match[2]; }
+        if (!line) continue;
+        
+        const parts = line.replace(/,/g, ' ').split(/\s+/);
+        const op = parts[0].toLowerCase(), getReg = x => parseInt(/^r([0-7])$/i.exec(x)[1]);
+        let inst = { op: op, rawText: line };
+        
+        if (op === 'li') { inst.dest = getReg(parts[1]); inst.imm = parseInt(parts[2]); } 
+        else if (op === 'addi') { inst.dest = getReg(parts[1]); inst.src1 = getReg(parts[2]); inst.imm = parseInt(parts[3]); } 
+        else if (['add', 'sub', 'mul'].includes(op)) { inst.dest = getReg(parts[1]); inst.src1 = getReg(parts[2]); inst.src2 = getReg(parts[3]); } 
+        else if (['beq', 'bne'].includes(op)) { inst.src1 = getReg(parts[1]); inst.src2 = getReg(parts[2]); inst.label = parts[3]; } 
+        parsedInsts.push(inst); instCount++;
+    }
+    parsedInsts.forEach(inst => { if (inst.label !== undefined) inst.targetPc = labels[inst.label]; });
+    return parsedInsts;
+}
+
+function handleLoad() {
+    try { const p = parseAssembly(); initSimulation(); cpu.program = p; writeLog('Loaded ' + p.length + ' insts'); renderUI(); return true; } 
+    catch (e) { writeLog('Error: ' + e); return false; }
+}
+
+const getAge = robIndex => (robIndex - cpu.robHead + ROB_SIZE) % ROB_SIZE;
+const getFreePregs = () => cpu.pregState.map((val, idx) => val === 0 ? idx : -1).filter(idx => idx >= 0);
+
+function simulateStep() {
+    if (!cpu.program.length) { writeLog('Load program first'); return false; }
+    
+    cpu.cycle++;
+    cpu.anim = { fetched: [], issued: [], executed: [], committed: [] }; 
+
+    if (cpu.stall && cpu.robCount === 0) {
+        cpu.speculativeRAT = [...cpu.architecturalRAT]; cpu.stall = false;
+    }
+
+    let numCommitted = 0;
+    for (let i = 0; i < WIDTH && cpu.robCount > 0; i++) {
+        const robEntry = cpu.rob[cpu.robHead];
+        if (!(robEntry.done || robEntry.squashed)) break;
+        
+        if (robEntry.preg !== null) {
+            if (robEntry.squashed) cpu.pregState[robEntry.preg] = 0;
+            else {
+                const oldPreg = cpu.architecturalRAT[robEntry.areg];
+                if (oldPreg !== robEntry.preg) cpu.pregState[oldPreg] = 0;
+                cpu.pregState[robEntry.preg] = 3; cpu.architecturalRAT[robEntry.areg] = robEntry.preg;
+            }
+        }
+        
+        if (!robEntry.squashed) {
+            cpu.retiredCount++; cpu.anim.committed.push(robEntry.id); 
+        }
+        cpu.rob[cpu.robHead] = null; cpu.robHead = (cpu.robHead + 1) % ROB_SIZE; cpu.robCount--; numCommitted++;
+    }
+
+    const newlyDone = cpu.execLanes.filter(e => e.remCycles <= 0).slice(0, WIDTH);
+    cpu.execLanes.forEach(e => { if (!newlyDone.includes(e)) e.remCycles--; });
+    cpu.execLanes = cpu.execLanes.filter(e => !newlyDone.includes(e));
+    
+    let mispredict = null;
+    for (const e of newlyDone) {
+        if (e.destPreg !== null) { cpu.pregValues[e.destPreg] = e.val; if (cpu.pregState[e.destPreg] === 1) cpu.pregState[e.destPreg] = 2; }
+        cpu.rob[e.robIdx].done = true; cpu.anim.executed.push(e.id);
+        if (e.isBranch && e.taken && (mispredict === null || getAge(e.robIdx) < getAge(mispredict.robIdx))) mispredict = e;
+    }
+
+    const issuedThisCycle = [];
+    for (let k = 0; k < cpu.iq.length && issuedThisCycle.length < WIDTH; k++) {
+        if (cpu.iq[k].ready1 && cpu.iq[k].ready2) issuedThisCycle.push(...cpu.iq.splice(k--, 1));
+    }
+    
+    for (const q of issuedThisCycle) {
+        const inst = q.inst, val1 = inst.src1 != null ? cpu.pregValues[q.preg1] : 0, val2 = inst.src2 != null ? cpu.pregValues[q.preg2] : 0;
+        const e = { id: q.id, robIdx: q.robIdx, destPreg: q.destPreg, inst: inst, remCycles: inst.op === 'mul' ? 2 : 0, isBranch: !!inst.label, val: 0 };
+        if (inst.op === 'li') e.val = inst.imm; else if (inst.op === 'add') e.val = val1 + val2; else if (inst.op === 'mul') e.val = val1 * val2; else if (inst.op === 'addi') e.val = val1 + inst.imm;
+        else e.taken = (val1 !== val2);
+        cpu.execLanes.push(e); cpu.anim.issued.push(q.id);
+    }
+
+    let flushedThisCycle = false;
+    if (mispredict) {
+        flushedThisCycle = true; cpu.flushCount++; const age = getAge(mispredict.robIdx);
+        for (let k = 0; k < ROB_SIZE; k++) if (cpu.rob[k] && getAge(k) > age) cpu.rob[k].squashed = true;
+        cpu.iq = cpu.iq.filter(q => getAge(q.robIdx) <= age); cpu.execLanes = cpu.execLanes.filter(e => getAge(e.robIdx) <= age);
+        cpu.pc = mispredict.inst.targetPc; cpu.stall = true; cpu.fetchGroup = [];
+    }
+
+    cpu.stallReason = flushedThisCycle ? 'flush' : cpu.stall ? 'draining' : (cpu.robCount > ROB_SIZE - WIDTH) ? 'ROB full' : (IQ_SIZE - cpu.iq.length < WIDTH) ? 'IQ full' : (getFreePregs().length < WIDTH) ? 'No PRF' : '';
+    
+    cpu.fetchGroup = [];
+    if (!cpu.stallReason) {
+        const numToFetch = Math.min(WIDTH, cpu.program.length - cpu.pc), freePregs = getFreePregs();
+        for (let k = 0; k < numToFetch; k++) {
+            const inst = cpu.program[cpu.pc + k], qEntry = { id: cpu.instIdCounter++, inst: inst, ready1: true, ready2: true };
+            if (inst.src1 != null) { qEntry.preg1 = cpu.speculativeRAT[inst.src1]; qEntry.ready1 = cpu.pregState[qEntry.preg1] >= 2; }
+            if (inst.src2 != null) { qEntry.preg2 = cpu.speculativeRAT[inst.src2]; qEntry.ready2 = cpu.pregState[qEntry.preg2] >= 2; }
+            
+            qEntry.robIdx = (cpu.robHead + cpu.robCount) % ROB_SIZE;
+            if (inst.dest != null) { qEntry.destPreg = freePregs[k]; cpu.pregState[qEntry.destPreg] = 1; cpu.speculativeRAT[inst.dest] = qEntry.destPreg; }
+            
+            cpu.rob[qEntry.robIdx] = { id: qEntry.id, inst: inst, areg: inst.dest, preg: qEntry.destPreg, done: false, squashed: false };
+            cpu.robCount++; cpu.iq.push(qEntry); cpu.fetchGroup.push(inst.rawText); cpu.anim.fetched.push(qEntry.id); 
+        }
+        cpu.pc += numToFetch;
+    }
+
+    for (const e of newlyDone) {
+        if (e.destPreg != null) for (const q of cpu.iq) { if (q.preg1 === e.destPreg) q.ready1 = true; if (q.preg2 === e.destPreg) q.ready2 = true; }
+    }
+    
+    renderUI();
+    
+    // Trigger visual floating boxes
+    if (currentFile === 'top.sv') {
+        setTimeout(triggerFlyAnimations, 20); 
+    }
+    
+    return cpu.pc < cpu.program.length || cpu.robCount > 0 || cpu.execLanes.length > 0 || cpu.iq.length > 0 || cpu.stall;
+}
+
+// --- UI Rendering ---
+const renderTable = (headers, rows) => `<table class="monospace"><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>${rows.join('')}</table>`;
+const renderPanel = (id, title, body) => `<div class="panel" id="panel-${id}"><h5>${title}</h5>${body}</div>`;
+
+function renderComponent(name) {
+    if (name === 'fetch') return renderPanel('fetch', 'Fetch Unit', `<div class="monospace">PC = ${cpu.pc}<br>Hold: ${cpu.stallReason || 'None'}</div>`);
+    if (name === 'iq') return renderPanel('iq', `Issue Queue (${cpu.iq.length}/${IQ_SIZE})`, renderTable(['ROB', 'Op'], cpu.iq.map(q => `<tr class="${cpu.anim.fetched.includes(q.id) ? 'anim-fetch' : ''}"><td>${q.robIdx}</td><td>${q.inst.rawText}</td></tr>`)));
+    if (name === 'rob') return renderPanel('rob', `Reorder Buffer (${cpu.robCount}/${ROB_SIZE})`, renderTable(['#', 'Inst', 'St'], cpu.rob.map((e,k) => e ? `<tr class="${cpu.anim.fetched.includes(e.id) ? 'anim-fetch' : cpu.anim.executed.includes(e.id) ? 'anim-exec' : ''}"><td>${k}</td><td class="${e.squashed?'status-squashed':e.done?'status-ok':''}">${e.inst.rawText}</td><td>${e.squashed?'SQ':e.done?'OK':'W'}</td></tr>` : `<tr><td>${k}</td><td>-</td><td></td></tr>`)));
+    if (name === 'prf') return renderPanel('prf', 'Physical Regs', renderTable(['PReg', 'Val'], cpu.pregState.map((val, i) => `<tr><td>p${i}</td><td>${val >= 2 ? cpu.pregValues[i] : ''}</td></tr>`)));
+    if (name === 'rru') return renderPanel('rru', 'Rename RAT', renderTable(['AReg', 'Spec'], cpu.speculativeRAT.map((p, i) => `<tr><td>r${i}</td><td>p${p}</td></tr>`)));
+    if (name === 'ex') return renderPanel('ex', 'Execution Lanes', renderTable(['ROB', 'Op'], cpu.execLanes.map(e => `<tr class="${cpu.anim.issued.includes(e.id) ? 'anim-issue' : ''}"><td>${e.robIdx}</td><td>${e.inst.rawText}</td></tr>`)));
+    if (name === 'code') return renderPanel('code', 'Code', renderTable(['#', 'Inst'], cpu.program.map((i, k) => `<tr class="${k === cpu.pc ? 'highlight-row' : ''}"><td>${k}</td><td>${i.rawText}</td></tr>`)));
+}
+
+const VIEWS = { 'top.sv': ['code', 'fetch', 'rru', 'iq', 'rob', 'prf', 'ex'] };
+
+function renderUI() {
+    $('body-content').innerHTML = '<div class="grid-container">' + (VIEWS[currentFile]||[]).map(renderComponent).join('') + '</div>';
+    $('tabs').innerHTML = `<b>${currentFile}</b><span class="monospace status-dim"> Cycle ${cpu.cycle}</span>`;
+    $('files-list').innerHTML = FILES.map(f => `<div class="file-tab ${f === currentFile ? 'active' : ''}" onclick="navigate('${f}')">${f}</div>`).join('');
+    $('src-code').style.display = $('btn-load').style.display =$('btn-run').style.display = (currentFile === 'top.sv') ? '' : 'none';
+}
+
+function navigate(file) { currentFile = file; renderUI(); }
+
+// --- FLYING BOX ANIMATION ENGINE ---
+function spawnFlyBox(textId, fromId, toId, colorVar, indexOffset) {
+    const fromEl = $(fromId), toEl = $(toId), layer =$('animation-layer');
+    if (!fromEl || !toEl || !layer) return;
+
+    const fromRect = fromEl.getBoundingClientRect();
+    const toRect = toEl.getBoundingClientRect();
+
+    const box = document.createElement('div');
+    box.className = 'fly-box';
+    box.style.backgroundColor = `var(--${colorVar})`;
+    box.textContent = 'i' + textId;
+
+    // Stagger multiple instructions visually
+    const offset = (indexOffset * 15) - 15;
+    
+    // Start Center
+    const startX = fromRect.left + (fromRect.width / 2) + offset;
+    const startY = fromRect.top + (fromRect.height / 2);
+    
+    // End Center
+    const endX = toRect.left + (toRect.width / 2) + offset;
+    const endY = toRect.top + (toRect.height / 2);
+
+    box.style.left = startX + 'px';
+    box.style.top = startY + 'px';
+    layer.appendChild(box);
+
+    // Trigger Animation Layout
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            box.style.transform = `translate(${endX - startX}px, ${endY - startY}px)`;
+            box.style.opacity = '0'; // Fade out as it reaches the destination
+        });
+    });
+
+    // Cleanup
+    setTimeout(() => { box.remove(); }, 400);
+}
+
+function triggerFlyAnimations() {
+    const spawnGroup = (idArray, from, to, color) => {
+        idArray.forEach((id, index) => spawnFlyBox(id, `panel-${from}`, `panel-${to}`, color, index));
+    };
+
+    // Instruction flows:
+    spawnGroup(cpu.anim.fetched, 'fetch', 'iq', 'ac');    // Fetch -> Queue
+    spawnGroup(cpu.anim.fetched, 'fetch', 'rob', 'ac');   // Fetch -> ROB
+    spawnGroup(cpu.anim.issued, 'iq', 'ex', 'wn');        // Queue -> Exec
+    spawnGroup(cpu.anim.executed, 'ex', 'rob', 'er');     // Exec -> Writeback to ROB
+    spawnGroup(cpu.anim.committed, 'rob', 'prf', 'ok');   // ROB -> Arch Commit PRF
+}
+
+// --- Events ---
+$('btn-load').onclick = handleLoad;
+$('btn-step').onclick = () => { if (currentFile !== 'top.sv') navigate('top.sv'); simulateStep(); };$('btn-run').onclick = () => {
+    if (runTimer) { clearInterval(runTimer); runTimer = null; $('btn-run').textContent = 'Run'; return; }
+    if (!cpu.program.length && !handleLoad()) return;
+    
+    $('btn-run').textContent = 'Pause';
+    runTimer = setInterval(() => { if (!simulateStep() || cpu.cycle > 500) $('btn-run').click(); }, 600); // 600ms gives time for animations
+};
+$('btn-reset').onclick = () => { if (runTimer)$('btn-run').click(); initSimulation(true); renderUI(); };
+
+$('src-code').value = DEFAULT_ASM; initSimulation(); navigate('top.sv');
+</script>
+</body>
+</html>
