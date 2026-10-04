@@ -1,17 +1,11 @@
-"""Chat backend for the OoO simulator.
-
-Setup:  pip install flask flask-cors openai
-        set OPENAI_API_KEY=sk-...        (PowerShell: $env:OPENAI_API_KEY="sk-...")
-Run:    python server.py   then open index.html in a browser.
-"""
 import json, os
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from openai import OpenAI
 
 app = Flask(__name__)
-CORS(app)
-client = OpenAI()  # reads OPENAI_API_KEY
+CORS(app)  # Allows cross-origin requests from your frontend
+client = OpenAI()  # Automatically reads OPENAI_API_KEY from environment
 MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
 
 SYSTEM = """You are a computer-architecture tutor embedded in a 4-way superscalar
@@ -23,6 +17,12 @@ and they drain in order), unified 8-entry issue queue (wakeup on execute broadca
 4 execution lanes (ALU 1 cycle, MUL 3 cycles). Answer questions about the features,
 offer alternative designs and explain why the current one may have been chosen.
 Be concise and concrete."""
+
+
+@app.get("/")
+def health_check():
+    """Health check endpoint for Render to verify service health."""
+    return jsonify(status="ok", message="OoO Simulator Backend Running")
 
 
 @app.post("/chat")
@@ -43,4 +43,6 @@ def chat():
 
 
 if __name__ == "__main__":
-    app.run(port=5000)
+    # Fallback for running locally; Render uses Gunicorn
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
