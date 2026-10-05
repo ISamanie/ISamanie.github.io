@@ -11,6 +11,7 @@ __pycache__/
 venv/
 .venv/
 env/
+.env/
 
 # Flask
 instance/
@@ -21,3 +22,5 @@ instance/
 .vscode/
 .idea/
 *.log
+.gitignore
+.__afs*

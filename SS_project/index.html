@@ -3,9 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>OoO Simulator with Data Flow Animations</title>
+<title>OoO Simulator - Compact Layout</title>
 <style>
-    /* CSS Variables for color theming */
     :root {
         --bg: #1e1e1e;
         --side: #252526;
@@ -24,19 +23,24 @@
     html, body {
         height: 100%; margin: 0;
         background: var(--bg); color: var(--tx);
-        font: 13px "Segoe UI", system-ui, sans-serif;
+        font: 12px "Segoe UI", system-ui, sans-serif;
     }
 
-    .monospace {
-        font-family: Consolas, "Courier New", monospace;
-        font-size: 12px;
-    }
+    .monospace { font-family: Consolas, "Courier New", monospace; font-size: 11px; }
 
     /* Grid Layout */
     #app {
-        display: grid; height: 100%; position: relative;
-        grid-template-columns: 210px 1fr 300px;
-        grid-template-rows: 1fr 210px;
+        display: grid; height: 100%;
+        grid-template-columns: 180px 1fr 220px;
+        grid-template-rows: 1fr 180px;
+    }
+
+    /* Terminal Collapsed State */
+    #app.term-collapsed {
+        grid-template-rows: 1fr auto;
+    }
+    #app.term-collapsed #code-area {
+        display: none;
     }
 
     /* Sidebar */
@@ -44,45 +48,91 @@
         grid-row: 1 / 3; background: var(--side);
         border-right: 1px solid var(--bd); overflow: auto;
     }
-    #sidebar h4 { margin: 0; padding: 8px 12px; font-weight: 600; color: var(--dim); }
+    #sidebar h4 { margin: 0; padding: 6px 10px; font-weight: 600; color: var(--dim); font-size: 11px;}
     
-    .file-tab {
-        padding: 3px 16px; cursor: pointer; font-family: Consolas, monospace;
-    }
+    .file-tab { padding: 4px 10px; cursor: pointer; font-family: Consolas, monospace; font-size: 11px;}
     .file-tab:hover { background: #2a2d2e; }
     .file-tab.active { background: #37373d; color: #fff; }
     
     #summary {
-        padding: 8px 12px; color: var(--dim); line-height: 1.5;
+        padding: 8px 10px; color: var(--dim); line-height: 1.4;
         border-top: 1px solid var(--bd); margin-top: 10px;
     }
 
     /* Main Editor / Visualizer Area */
-    #editor { overflow: auto; padding: 0; position: relative; }
+    #editor { 
+        display: flex; flex-direction: column;
+        background: var(--bg); position: relative;
+        overflow: hidden; 
+    }
+    
     #tabs {
-        background: var(--side); padding: 6px 14px;
-        border-bottom: 1px solid var(--bd); position: sticky; top: 0;
-        display: flex; gap: 14px; align-items: center; z-index: 10;
+        background: var(--side); padding: 4px 12px;
+        border-bottom: 1px solid var(--bd); position: relative;
+        display: flex; gap: 14px; align-items: center; z-index: 30;
     }
-    #tabs b { color: #fff; font-family: Consolas, monospace; }
-    #body-content { padding: 12px; display: grid; gap: 12px; }
+    #tabs b { color: #fff; font-family: Consolas, monospace; font-size: 12px; }
 
-    /* Panels & Tables */
-    .grid-container {
-        display: grid; gap: 12px;
-        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    /* Scrollable Canvas area */
+    #scroll-area {
+        flex: 1; overflow: auto; position: relative;
     }
-    .panel {
-        border: 1px solid var(--bd); background: #1b1b1c; padding: 8px;
+
+    #editor-canvas {
         position: relative;
+        width: 100%; min-height: 100%;
     }
-    .panel h5 { margin: 0 0 6px; color: var(--ac); font-size: 12px; font-weight: 600; }
+
+    /* --- THE COMPACT RESPONSIVE GRID --- */
+    .layout-top {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-rows: auto auto 1fr;
+        grid-template-areas:
+            "code fetch rru"
+            "iq   rob   prf"
+            "ex   rob   prf";
+        gap: 30px 15px; 
+        padding: 20px 15px; 
+    }
+    .layout-single {
+        display: flex; flex-direction: column; gap: 15px; padding: 20px; max-width: 800px;
+    }
+
+    /* Assign grid areas to panels */
+    #panel-code { grid-area: code; }
+    #panel-fetch { grid-area: fetch; }
+    #panel-rru { grid-area: rru; }
+    #panel-iq { grid-area: iq; }
+    #panel-rob { grid-area: rob; }
+    #panel-prf { grid-area: prf; }
+    #panel-ex { grid-area: ex; }
+
+    /* SVG PCB Traces Layer */
+    #wire-layer {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        pointer-events: none; z-index: 1;
+    }
+    .wire-base { fill: none; stroke-width: 5px; opacity: 0.15; }
+    .wire-anim {
+        fill: none; stroke-width: 2.5px; stroke-dasharray: 10 10;
+        opacity: 0.7; animation: dash-flow 15s linear infinite;
+    }
+    @keyframes dash-flow { to { stroke-dashoffset: -1000; } }
+
+    /* Component Panels Layer */
+    #body-content { position: relative; z-index: 2; }
+    
+    .panel { 
+        border: 1px solid var(--bd); background: rgba(27, 27, 28, 0.98); 
+        padding: 8px; position: relative; border-radius: 4px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        width: 100%; overflow-x: auto;
+    }
+    .panel h5 { margin: 0 0 6px; color: var(--ac); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
     
     table { border-collapse: collapse; width: 100%; }
-    td, th {
-        border-bottom: 1px solid #2a2a2a; padding: 3px 5px;
-        text-align: left; font-weight: 400;
-    }
+    td, th { border-bottom: 1px solid #2a2a2a; padding: 2px 4px; text-align: left; font-weight: 400; }
     th { color: var(--dim); }
 
     /* Status Colors */
@@ -91,7 +141,6 @@
     .status-ok { color: var(--ok); }
     .status-action { color: var(--ac); }
     .status-squashed { color: var(--er); text-decoration: line-through; }
-    
     .highlight-row { background: #264f78; }
 
     /* Terminal */
@@ -100,24 +149,22 @@
         background: var(--bg); display: flex; flex-direction: column; min-height: 0;
     }
     #terminal .toolbar {
-        display: flex; gap: 6px; padding: 4px 10px;
+        display: flex; gap: 6px; padding: 2px 10px;
         background: var(--side); align-items: center;
     }
     #terminal textarea {
-        flex: 1; background: #1b1b1c; color: var(--tx);
-        border: 1px solid var(--bd); margin: 6px 10px;
-        padding: 6px; resize: none; min-height: 0;
+        flex: 1; background: #1b1b1c; color: var(--tx); border: 1px solid var(--bd);
+        margin: 6px 10px; padding: 6px; resize: none; min-height: 0; outline: none;
     }
-    
-    #log { flex: 1; overflow: auto; padding: 6px 12px; white-space: pre-wrap; line-height: 1.5; }
+    #log { flex: 1; overflow: auto; padding: 6px 12px; white-space: pre-wrap; line-height: 1.4; font-family: monospace; font-size: 11px;}
     #code-area { display: flex; min-height: 0; flex: 1; }
     #code-area textarea { flex: 1; }
     #code-area #log { flex: 1; }
 
-    /* Buttons */
-    button { background: #0e639c; color: #fff; border: 0; padding: 3px 10px; cursor: pointer; }
+    button { background: #0e639c; color: #fff; border: 0; padding: 3px 10px; cursor: pointer; border-radius: 2px; font-size: 11px;}
     button:hover { background: #1177bb; }
     button.secondary { background: #3a3d41; }
+    button.secondary:hover { background: #4a4d51; }
 
     /* Chat UI */
     #chat {
@@ -125,35 +172,41 @@
         background: var(--side); display: flex; flex-direction: column; min-height: 0;
     }
     #chat-messages { flex: 1; overflow: auto; padding: 10px; }
-    .msg-user, .msg-ai { margin-bottom: 10px; line-height: 1.45; white-space: pre-wrap; }
-    .msg-user { color: #fff; }
+    .msg-user, .msg-ai { margin-bottom: 10px; line-height: 1.4; white-space: pre-wrap; }
+    .msg-user { color: #fff; font-weight: 600; }
     .msg-ai { color: var(--tx); border-left: 2px solid var(--ac); padding-left: 8px; }
-    
     #chat-input-area { display: flex; gap: 6px; padding: 8px; border-top: 1px solid var(--bd); }
-    #chat-input-area input { flex: 1; background: #3c3c3c; border: 1px solid var(--bd); color: #fff; padding: 5px; }
+    #chat-input-area input { flex: 1; background: #3c3c3c; border: 1px solid var(--bd); color: #fff; padding: 4px 6px; outline: none; font-size: 11px;}
 
     /* CSS Row Flash Animations */
-    @keyframes flash-fetch { 0% { background-color: rgba(55, 148, 255, 0.4); transform: translateX(-2px); } 100% { background-color: transparent; transform: translateX(0); } }
-    @keyframes flash-issue { 0% { background-color: rgba(220, 220, 170, 0.4); transform: translateX(2px); } 100% { background-color: transparent; transform: translateX(0); } }
-    @keyframes flash-exec { 0% { background-color: rgba(244, 135, 113, 0.4); transform: scale(1.02); } 100% { background-color: transparent; transform: scale(1); } }
-    
-    .anim-fetch { animation: flash-fetch 0.4s ease-out; }
-    .anim-issue { animation: flash-issue 0.4s ease-out; }
-    .anim-exec  { animation: flash-exec 0.4s ease-out; }
+    @keyframes flash-fetch { 0% { background-color: rgba(55, 148, 255, 0.4); } 100% { background-color: transparent; } }
+    @keyframes flash-issue { 0% { background-color: rgba(220, 220, 170, 0.4); } 100% { background-color: transparent; } }
+    @keyframes flash-exec { 0% { background-color: rgba(244, 135, 113, 0.4); } 100% { background-color: transparent; } }
+    .anim-fetch { animation: flash-fetch 1s ease-out; }
+    .anim-issue { animation: flash-issue 1s ease-out; }
+    .anim-exec  { animation: flash-exec 1s ease-out; }
 
-    /* FLYING BOX OVERLAY */
+    /* FLYING BOX ALONG PATHS OVERLAY */
     #animation-layer {
         position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-        pointer-events: none; overflow: hidden; z-index: 1000;
+        pointer-events: none; overflow: hidden; z-index: 20;
     }
 
     .fly-box {
-        position: absolute; width: 22px; height: 22px;
+        position: absolute; top: 0; left: 0;
+        width: 20px; height: 20px; margin: -10px 0 0 -10px;
         color: #1e1e1e; font-size: 10px; font-weight: bold; font-family: monospace;
         display: flex; align-items: center; justify-content: center;
-        border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-        transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease-in;
-        opacity: 0.9;
+        border-radius: 3px; box-shadow: 0 2px 6px rgba(0,0,0,0.8);
+        offset-rotate: 0deg; 
+        opacity: 0;
+    }
+
+    @keyframes travel-path {
+        0%   { offset-distance: 0%; opacity: 0; transform: scale(0.5); }
+        15%  { opacity: 1; transform: scale(1); }
+        85%  { opacity: 1; transform: scale(1); }
+        100% { offset-distance: 100%; opacity: 0; transform: scale(0.5); }
     }
 
     @media(max-width: 900px) {
@@ -173,17 +226,24 @@
     
     <div id="editor">
         <div id="tabs"></div>
-        <div id="body-content"></div>
+        <div id="scroll-area">
+            <div id="editor-canvas">
+                <svg id="wire-layer" xmlns="http://www.w3.org/2000/svg"></svg>
+                <div id="body-content"></div>
+                <div id="animation-layer"></div>
+            </div>
+        </div>
     </div>
     
     <div id="terminal">
         <div class="toolbar">
-            <span id="terminal-title">Terminal</span>
+            <span id="terminal-title" style="font-weight: 600;">Terminal</span>
             <span style="flex:1"></span>
             <button id="btn-load">Load</button>
             <button id="btn-step">Step</button>
             <button id="btn-run">Run</button>
             <button id="btn-reset" class="secondary">Reset</button>
+            <button id="btn-toggle-term" class="secondary" style="padding: 2px 6px; font-size: 9px;" title="Toggle Terminal">▼</button>
         </div>
         <div id="code-area">
             <textarea id="src-code" class="monospace" spellcheck="false"></textarea>
@@ -192,33 +252,32 @@
     </div>
     
     <div id="chat">
-        <div class="toolbar" style="padding: 8px 12px; color: var(--dim);">Chat</div>
-        <div id="chat-messages">
-            <div class="msg-ai">Ask about any feature of the design...</div>
-        </div>
+        <div class="toolbar" style="padding: 6px 10px; color: var(--dim); font-weight: 600;">Chat Assistant</div>
+        <div id="chat-messages"><div class="msg-ai">Ask about any feature of the design!</div></div>
         <div id="chat-input-area">
-            <input id="chat-input" placeholder="Ask about the design">
+            <input id="chat-input" placeholder="Ask about architecture...">
             <button id="btn-send">Send</button>
         </div>
     </div>
-    <!-- Layer for flying instructions -->
-    <div id="animation-layer"></div>
 </div>
 
 <script>
+// --- Backend URL ---
+const BACKEND_URL = "https://superscalar.onrender.com";
+
 // --- Constants & Config ---
 const WIDTH = 4, ROB_SIZE = 16, IQ_SIZE = 8, NUM_PHYSICAL_REGS = 16, NUM_ARCH_REGS = 8, MAX_INSTRUCTIONS = 16;
 const $ = id => document.getElementById(id);
 const FILES = ['top.sv', 'fetch.sv', 'rru.sv', 'issue_queue.sv', 'rob.sv', 'prf.sv', 'execution_units.sv'];
 
-const INFO = { /* Omitted bulky info for space, same as previous */ 
+const INFO = {
     'top.sv': { title: 'Whole pipeline overview.', alts: [] },
-    'fetch.sv': { title: 'Fetch Unit.', alts: [] },
-    'rru.sv': { title: 'Register Rename.', alts: [] },
-    'issue_queue.sv': { title: 'Issue Queue.', alts: [] },
-    'rob.sv': { title: 'Reorder Buffer.', alts: [] },
-    'prf.sv': { title: 'Physical Register File.', alts: [] },
-    'execution_units.sv': { title: 'Execution Lanes.', alts: [] }
+    'fetch.sv': { title: 'Fetches instructions.', alts: [] },
+    'rru.sv': { title: 'Register Rename Unit.', alts: [] },
+    'issue_queue.sv': { title: 'Unified issue queue.', alts: [] },
+    'rob.sv': { title: 'Reorder buffer.', alts: [] },
+    'prf.sv': { title: 'Physical registers.', alts: [] },
+    'execution_units.sv': { title: 'Execution lanes.', alts: [] }
 };
 
 const DEFAULT_ASM = 
@@ -236,24 +295,26 @@ add r5, r2, r4`;
 let cpu, currentFile = 'top.sv', runTimer = null;
 
 function initSimulation(keepProgram = false) {
-    const program = keepProgram ? cpu.program : [];
+    const program = keepProgram ? (cpu ? cpu.program : []) : [];
     cpu = {
         cycle: 0, pc: 0, instIdCounter: 0, program: program,
         rob: Array(ROB_SIZE).fill(null), robHead: 0, robCount: 0, iq: [], execLanes: [],
         pregState: Array(NUM_PHYSICAL_REGS).fill(0).map((_, i) => i < NUM_ARCH_REGS ? 3 : 0),
         pregValues: Array(NUM_PHYSICAL_REGS).fill(0),
-        speculativeRAT: [...Array(NUM_ARCH_REGS).keys()],
-        architecturalRAT: [...Array(NUM_ARCH_REGS).keys()],
+        speculativeRAT: [...Array(NUM_ARCH_REGS).keys()], architecturalRAT: [...Array(NUM_ARCH_REGS).keys()],
         stall: false, retiredCount: 0, flushCount: 0, stallReason: '', fetchGroup: [],
         anim: { fetched: [], issued: [], executed: [], committed: [] }
     };
 }
 
-function writeLog(text) {
-    const logEl = $('log'); logEl.textContent += text + '\n'; logEl.scrollTop = 1e9;
+function writeLog(text, isError = false) {
+    const logEl = $('log'); 
+    if(isError) logEl.innerHTML += `<span style="color:var(--er)">${text}</span>\n`;
+    else logEl.textContent += text + '\n'; 
+    logEl.scrollTop = 1e9;
 }
 
-// --- Assembly Parser (Minified logic) ---
+// --- Assembly Parser ---
 function parseAssembly() {
     const parsedInsts = [], labels = {}; let instCount = 0;
     for (const rawLine of $('src-code').value.split('\n')) {
@@ -277,105 +338,102 @@ function parseAssembly() {
 
 function handleLoad() {
     try { const p = parseAssembly(); initSimulation(); cpu.program = p; writeLog('Loaded ' + p.length + ' insts'); renderUI(); return true; } 
-    catch (e) { writeLog('Error: ' + e); return false; }
+    catch (e) { writeLog('Error compiling code: ' + e, true); return false; }
 }
 
 const getAge = robIndex => (robIndex - cpu.robHead + ROB_SIZE) % ROB_SIZE;
 const getFreePregs = () => cpu.pregState.map((val, idx) => val === 0 ? idx : -1).filter(idx => idx >= 0);
 
 function simulateStep() {
-    if (!cpu.program.length) { writeLog('Load program first'); return false; }
-    
-    cpu.cycle++;
-    cpu.anim = { fetched: [], issued: [], executed: [], committed: [] }; 
+    try {
+        if (!cpu.program.length) { writeLog('Load program first', true); return false; }
+        cpu.cycle++;
+        cpu.anim = { fetched: [], issued: [], executed: [], committed: [] }; 
 
-    if (cpu.stall && cpu.robCount === 0) {
-        cpu.speculativeRAT = [...cpu.architecturalRAT]; cpu.stall = false;
-    }
+        if (cpu.stall && cpu.robCount === 0) {
+            cpu.speculativeRAT = [...cpu.architecturalRAT]; cpu.stall = false;
+        }
 
-    let numCommitted = 0;
-    for (let i = 0; i < WIDTH && cpu.robCount > 0; i++) {
-        const robEntry = cpu.rob[cpu.robHead];
-        if (!(robEntry.done || robEntry.squashed)) break;
-        
-        if (robEntry.preg !== null) {
-            if (robEntry.squashed) cpu.pregState[robEntry.preg] = 0;
-            else {
-                const oldPreg = cpu.architecturalRAT[robEntry.areg];
-                if (oldPreg !== robEntry.preg) cpu.pregState[oldPreg] = 0;
-                cpu.pregState[robEntry.preg] = 3; cpu.architecturalRAT[robEntry.areg] = robEntry.preg;
+        let numCommitted = 0;
+        for (let i = 0; i < WIDTH && cpu.robCount > 0; i++) {
+            const robEntry = cpu.rob[cpu.robHead];
+            if (!(robEntry.done || robEntry.squashed)) break;
+            if (robEntry.preg !== null) {
+                if (robEntry.squashed) cpu.pregState[robEntry.preg] = 0;
+                else {
+                    const oldPreg = cpu.architecturalRAT[robEntry.areg];
+                    if (oldPreg !== robEntry.preg) cpu.pregState[oldPreg] = 0;
+                    cpu.pregState[robEntry.preg] = 3; cpu.architecturalRAT[robEntry.areg] = robEntry.preg;
+                }
             }
+            if (!robEntry.squashed) { cpu.retiredCount++; cpu.anim.committed.push(robEntry.id); }
+            cpu.rob[cpu.robHead] = null; cpu.robHead = (cpu.robHead + 1) % ROB_SIZE; cpu.robCount--; numCommitted++;
+        }
+
+        const newlyDone = cpu.execLanes.filter(e => e.remCycles <= 0).slice(0, WIDTH);
+        cpu.execLanes.forEach(e => { if (!newlyDone.includes(e)) e.remCycles--; });
+        cpu.execLanes = cpu.execLanes.filter(e => !newlyDone.includes(e));
+        
+        let mispredict = null;
+        for (const e of newlyDone) {
+            if (e.destPreg !== null) { cpu.pregValues[e.destPreg] = e.val; if (cpu.pregState[e.destPreg] === 1) cpu.pregState[e.destPreg] = 2; }
+            cpu.rob[e.robIdx].done = true; cpu.anim.executed.push(e.id);
+            if (e.isBranch && e.taken && (mispredict === null || getAge(e.robIdx) < getAge(mispredict.robIdx))) mispredict = e;
+        }
+
+        const issuedThisCycle = [];
+        for (let k = 0; k < cpu.iq.length && issuedThisCycle.length < WIDTH; k++) {
+            if (cpu.iq[k].ready1 && cpu.iq[k].ready2) issuedThisCycle.push(...cpu.iq.splice(k--, 1));
         }
         
-        if (!robEntry.squashed) {
-            cpu.retiredCount++; cpu.anim.committed.push(robEntry.id); 
+        for (const q of issuedThisCycle) {
+            const inst = q.inst, val1 = inst.src1 != null ? cpu.pregValues[q.preg1] : 0, val2 = inst.src2 != null ? cpu.pregValues[q.preg2] : 0;
+            const e = { id: q.id, robIdx: q.robIdx, destPreg: q.destPreg, inst: inst, remCycles: inst.op === 'mul' ? 2 : 0, isBranch: !!inst.label, val: 0 };
+            if (inst.op === 'li') e.val = inst.imm; else if (inst.op === 'add') e.val = val1 + val2; else if (inst.op === 'mul') e.val = val1 * val2; else if (inst.op === 'addi') e.val = val1 + inst.imm;
+            else e.taken = (val1 !== val2);
+            cpu.execLanes.push(e); cpu.anim.issued.push(q.id);
         }
-        cpu.rob[cpu.robHead] = null; cpu.robHead = (cpu.robHead + 1) % ROB_SIZE; cpu.robCount--; numCommitted++;
-    }
 
-    const newlyDone = cpu.execLanes.filter(e => e.remCycles <= 0).slice(0, WIDTH);
-    cpu.execLanes.forEach(e => { if (!newlyDone.includes(e)) e.remCycles--; });
-    cpu.execLanes = cpu.execLanes.filter(e => !newlyDone.includes(e));
-    
-    let mispredict = null;
-    for (const e of newlyDone) {
-        if (e.destPreg !== null) { cpu.pregValues[e.destPreg] = e.val; if (cpu.pregState[e.destPreg] === 1) cpu.pregState[e.destPreg] = 2; }
-        cpu.rob[e.robIdx].done = true; cpu.anim.executed.push(e.id);
-        if (e.isBranch && e.taken && (mispredict === null || getAge(e.robIdx) < getAge(mispredict.robIdx))) mispredict = e;
-    }
-
-    const issuedThisCycle = [];
-    for (let k = 0; k < cpu.iq.length && issuedThisCycle.length < WIDTH; k++) {
-        if (cpu.iq[k].ready1 && cpu.iq[k].ready2) issuedThisCycle.push(...cpu.iq.splice(k--, 1));
-    }
-    
-    for (const q of issuedThisCycle) {
-        const inst = q.inst, val1 = inst.src1 != null ? cpu.pregValues[q.preg1] : 0, val2 = inst.src2 != null ? cpu.pregValues[q.preg2] : 0;
-        const e = { id: q.id, robIdx: q.robIdx, destPreg: q.destPreg, inst: inst, remCycles: inst.op === 'mul' ? 2 : 0, isBranch: !!inst.label, val: 0 };
-        if (inst.op === 'li') e.val = inst.imm; else if (inst.op === 'add') e.val = val1 + val2; else if (inst.op === 'mul') e.val = val1 * val2; else if (inst.op === 'addi') e.val = val1 + inst.imm;
-        else e.taken = (val1 !== val2);
-        cpu.execLanes.push(e); cpu.anim.issued.push(q.id);
-    }
-
-    let flushedThisCycle = false;
-    if (mispredict) {
-        flushedThisCycle = true; cpu.flushCount++; const age = getAge(mispredict.robIdx);
-        for (let k = 0; k < ROB_SIZE; k++) if (cpu.rob[k] && getAge(k) > age) cpu.rob[k].squashed = true;
-        cpu.iq = cpu.iq.filter(q => getAge(q.robIdx) <= age); cpu.execLanes = cpu.execLanes.filter(e => getAge(e.robIdx) <= age);
-        cpu.pc = mispredict.inst.targetPc; cpu.stall = true; cpu.fetchGroup = [];
-    }
-
-    cpu.stallReason = flushedThisCycle ? 'flush' : cpu.stall ? 'draining' : (cpu.robCount > ROB_SIZE - WIDTH) ? 'ROB full' : (IQ_SIZE - cpu.iq.length < WIDTH) ? 'IQ full' : (getFreePregs().length < WIDTH) ? 'No PRF' : '';
-    
-    cpu.fetchGroup = [];
-    if (!cpu.stallReason) {
-        const numToFetch = Math.min(WIDTH, cpu.program.length - cpu.pc), freePregs = getFreePregs();
-        for (let k = 0; k < numToFetch; k++) {
-            const inst = cpu.program[cpu.pc + k], qEntry = { id: cpu.instIdCounter++, inst: inst, ready1: true, ready2: true };
-            if (inst.src1 != null) { qEntry.preg1 = cpu.speculativeRAT[inst.src1]; qEntry.ready1 = cpu.pregState[qEntry.preg1] >= 2; }
-            if (inst.src2 != null) { qEntry.preg2 = cpu.speculativeRAT[inst.src2]; qEntry.ready2 = cpu.pregState[qEntry.preg2] >= 2; }
-            
-            qEntry.robIdx = (cpu.robHead + cpu.robCount) % ROB_SIZE;
-            if (inst.dest != null) { qEntry.destPreg = freePregs[k]; cpu.pregState[qEntry.destPreg] = 1; cpu.speculativeRAT[inst.dest] = qEntry.destPreg; }
-            
-            cpu.rob[qEntry.robIdx] = { id: qEntry.id, inst: inst, areg: inst.dest, preg: qEntry.destPreg, done: false, squashed: false };
-            cpu.robCount++; cpu.iq.push(qEntry); cpu.fetchGroup.push(inst.rawText); cpu.anim.fetched.push(qEntry.id); 
+        let flushedThisCycle = false;
+        if (mispredict) {
+            flushedThisCycle = true; cpu.flushCount++; const age = getAge(mispredict.robIdx);
+            for (let k = 0; k < ROB_SIZE; k++) if (cpu.rob[k] && getAge(k) > age) cpu.rob[k].squashed = true;
+            cpu.iq = cpu.iq.filter(q => getAge(q.robIdx) <= age); cpu.execLanes = cpu.execLanes.filter(e => getAge(e.robIdx) <= age);
+            cpu.pc = mispredict.inst.targetPc; cpu.stall = true; cpu.fetchGroup = [];
         }
-        cpu.pc += numToFetch;
-    }
 
-    for (const e of newlyDone) {
-        if (e.destPreg != null) for (const q of cpu.iq) { if (q.preg1 === e.destPreg) q.ready1 = true; if (q.preg2 === e.destPreg) q.ready2 = true; }
+        cpu.stallReason = flushedThisCycle ? 'flush' : cpu.stall ? 'draining' : (cpu.robCount > ROB_SIZE - WIDTH) ? 'ROB full' : (IQ_SIZE - cpu.iq.length < WIDTH) ? 'IQ full' : (getFreePregs().length < WIDTH) ? 'No PRF' : '';
+        
+        cpu.fetchGroup = [];
+        if (!cpu.stallReason) {
+            const numToFetch = Math.min(WIDTH, cpu.program.length - cpu.pc), freePregs = getFreePregs();
+            for (let k = 0; k < numToFetch; k++) {
+                const inst = cpu.program[cpu.pc + k], qEntry = { id: cpu.instIdCounter++, inst: inst, ready1: true, ready2: true };
+                if (inst.src1 != null) { qEntry.preg1 = cpu.speculativeRAT[inst.src1]; qEntry.ready1 = cpu.pregState[qEntry.preg1] >= 2; }
+                if (inst.src2 != null) { qEntry.preg2 = cpu.speculativeRAT[inst.src2]; qEntry.ready2 = cpu.pregState[qEntry.preg2] >= 2; }
+                
+                qEntry.robIdx = (cpu.robHead + cpu.robCount) % ROB_SIZE;
+                if (inst.dest != null) { qEntry.destPreg = freePregs[k]; cpu.pregState[qEntry.destPreg] = 1; cpu.speculativeRAT[inst.dest] = qEntry.destPreg; }
+                
+                cpu.rob[qEntry.robIdx] = { id: qEntry.id, inst: inst, areg: inst.dest, preg: qEntry.destPreg, done: false, squashed: false };
+                cpu.robCount++; cpu.iq.push(qEntry); cpu.fetchGroup.push(inst.rawText); cpu.anim.fetched.push(qEntry.id); 
+            }
+            cpu.pc += numToFetch;
+        }
+
+        for (const e of newlyDone) {
+            if (e.destPreg != null) for (const q of cpu.iq) { if (q.preg1 === e.destPreg) q.ready1 = true; if (q.preg2 === e.destPreg) q.ready2 = true; }
+        }
+        
+        renderUI();
+        if (currentFile === 'top.sv') setTimeout(triggerFlyAnimations, 20); 
+        
+        return cpu.pc < cpu.program.length || cpu.robCount > 0 || cpu.execLanes.length > 0 || cpu.iq.length > 0 || cpu.stall;
+    } catch (err) {
+        writeLog(`Engine Error: ${err.message}`, true);
+        if (runTimer) $('btn-run').click();
+        return false;
     }
-    
-    renderUI();
-    
-    // Trigger visual floating boxes
-    if (currentFile === 'top.sv') {
-        setTimeout(triggerFlyAnimations, 20); 
-    }
-    
-    return cpu.pc < cpu.program.length || cpu.robCount > 0 || cpu.execLanes.length > 0 || cpu.iq.length > 0 || cpu.stall;
 }
 
 // --- UI Rendering ---
@@ -383,77 +441,290 @@ const renderTable = (headers, rows) => `<table class="monospace"><tr>${headers.m
 const renderPanel = (id, title, body) => `<div class="panel" id="panel-${id}"><h5>${title}</h5>${body}</div>`;
 
 function renderComponent(name) {
-    if (name === 'fetch') return renderPanel('fetch', 'Fetch Unit', `<div class="monospace">PC = ${cpu.pc}<br>Hold: ${cpu.stallReason || 'None'}</div>`);
-    if (name === 'iq') return renderPanel('iq', `Issue Queue (${cpu.iq.length}/${IQ_SIZE})`, renderTable(['ROB', 'Op'], cpu.iq.map(q => `<tr class="${cpu.anim.fetched.includes(q.id) ? 'anim-fetch' : ''}"><td>${q.robIdx}</td><td>${q.inst.rawText}</td></tr>`)));
-    if (name === 'rob') return renderPanel('rob', `Reorder Buffer (${cpu.robCount}/${ROB_SIZE})`, renderTable(['#', 'Inst', 'St'], cpu.rob.map((e,k) => e ? `<tr class="${cpu.anim.fetched.includes(e.id) ? 'anim-fetch' : cpu.anim.executed.includes(e.id) ? 'anim-exec' : ''}"><td>${k}</td><td class="${e.squashed?'status-squashed':e.done?'status-ok':''}">${e.inst.rawText}</td><td>${e.squashed?'SQ':e.done?'OK':'W'}</td></tr>` : `<tr><td>${k}</td><td>-</td><td></td></tr>`)));
-    if (name === 'prf') return renderPanel('prf', 'Physical Regs', renderTable(['PReg', 'Val'], cpu.pregState.map((val, i) => `<tr><td>p${i}</td><td>${val >= 2 ? cpu.pregValues[i] : ''}</td></tr>`)));
-    if (name === 'rru') return renderPanel('rru', 'Rename RAT', renderTable(['AReg', 'Spec'], cpu.speculativeRAT.map((p, i) => `<tr><td>r${i}</td><td>p${p}</td></tr>`)));
-    if (name === 'ex') return renderPanel('ex', 'Execution Lanes', renderTable(['ROB', 'Op'], cpu.execLanes.map(e => `<tr class="${cpu.anim.issued.includes(e.id) ? 'anim-issue' : ''}"><td>${e.robIdx}</td><td>${e.inst.rawText}</td></tr>`)));
-    if (name === 'code') return renderPanel('code', 'Code', renderTable(['#', 'Inst'], cpu.program.map((i, k) => `<tr class="${k === cpu.pc ? 'highlight-row' : ''}"><td>${k}</td><td>${i.rawText}</td></tr>`)));
+    if (name === 'code') return renderPanel('code', `Assembly`, renderTable(['#', 'Inst'], cpu.program.map((i, k) => `<tr class="${k === cpu.pc ? 'highlight-row' : ''}"><td>${k}</td><td>${i.rawText}</td></tr>`)));
+    if (name === 'fetch') return renderPanel('fetch', 'Fetch Unit', `<div class="monospace" style="margin-bottom:6px">PC = ${cpu.pc}<br>Stall: <span class="${cpu.stallReason?'status-squashed':'status-ok'}">${cpu.stallReason || 'None'}</span></div>`);
+    if (name === 'iq') return renderPanel('iq', `Queue (${cpu.iq.length}/${IQ_SIZE})`, renderTable(['R', 'Op'], cpu.iq.map(q => `<tr class="${cpu.anim.fetched.includes(q.id) ? 'anim-fetch' : ''}"><td>${q.robIdx}</td><td>${q.inst.rawText}</td></tr>`)));
+    if (name === 'rob') return renderPanel('rob', `ROB (${cpu.robCount}/${ROB_SIZE})`, renderTable(['#', 'Inst', 'St'], cpu.rob.map((e,k) => e ? `<tr class="${cpu.anim.fetched.includes(e.id) ? 'anim-fetch' : cpu.anim.executed.includes(e.id) ? 'anim-exec' : ''}"><td>${k}</td><td class="${e.squashed?'status-squashed':e.done?'status-ok':''}">${e.inst.rawText}</td><td>${e.squashed?'SQ':e.done?'OK':'W'}</td></tr>` : `<tr><td>${k}</td><td>-</td><td></td></tr>`)));
+    if (name === 'prf') return renderPanel('prf', 'P-Regs', renderTable(['P', 'Val'], cpu.pregState.map((val, i) => `<tr><td>p${i}</td><td>${val >= 2 ? cpu.pregValues[i] : ''}</td></tr>`)));
+    if (name === 'rru') return renderPanel('rru', 'Rename RAT', renderTable(['A', 'Spec'], cpu.speculativeRAT.map((p, i) => `<tr><td>r${i}</td><td>p${p}</td></tr>`)));
+    if (name === 'ex') return renderPanel('ex', 'Exec Lanes', renderTable(['R', 'Op'], cpu.execLanes.map(e => `<tr class="${cpu.anim.issued.includes(e.id) ? 'anim-issue' : ''}"><td>${e.robIdx}</td><td>${e.inst.rawText}</td></tr>`)));
+    return '';
 }
 
-const VIEWS = { 'top.sv': ['code', 'fetch', 'rru', 'iq', 'rob', 'prf', 'ex'] };
+const VIEWS = { 
+    'top.sv': ['code', 'fetch', 'rru', 'iq', 'rob', 'prf', 'ex'],
+    'fetch.sv': ['fetch'],
+    'rru.sv': ['rru'],
+    'issue_queue.sv': ['iq'],
+    'rob.sv': ['rob'],
+    'prf.sv': ['prf'],
+    'execution_units.sv': ['ex']
+};
 
 function renderUI() {
-    $('body-content').innerHTML = '<div class="grid-container">' + (VIEWS[currentFile]||[]).map(renderComponent).join('') + '</div>';
-    $('tabs').innerHTML = `<b>${currentFile}</b><span class="monospace status-dim"> Cycle ${cpu.cycle}</span>`;
-    $('files-list').innerHTML = FILES.map(f => `<div class="file-tab ${f === currentFile ? 'active' : ''}" onclick="navigate('${f}')">${f}</div>`).join('');
-    $('src-code').style.display = $('btn-load').style.display =$('btn-run').style.display = (currentFile === 'top.sv') ? '' : 'none';
+    try {
+        const layoutViews = VIEWS[currentFile] || [];
+        const container = $('body-content');
+        container.innerHTML = layoutViews.map(renderComponent).join('');
+        
+        if (currentFile === 'top.sv') {
+            container.className = 'layout-top';
+            updateWires();
+        } else {
+            container.className = 'layout-single';
+            $('wire-layer').innerHTML = '';
+        }
+        
+        $('tabs').innerHTML = `<b>${currentFile}</b><span class="monospace status-dim"> Cycle ${cpu.cycle}</span>`;
+        $('files-list').innerHTML = FILES.map(f => `<div class="file-tab ${f === currentFile ? 'active' : ''}" onclick="navigate('${f}')">${f}</div>`).join('');
+        $('src-code').style.display =$('btn-load').style.display = $('btn-run').style.display =$('btn-step').style.display = (currentFile === 'top.sv') ? '' : 'none';
+        
+    } catch (err) {
+        writeLog(`UI Render Error: ${err.message}`, true);
+    }
 }
 
-function navigate(file) { currentFile = file; renderUI(); }
+function navigate(file) { 
+    currentFile = file; 
+    if (file === 'top.sv') {
+        $('log').innerHTML = '';
+        if (cpu.cycle === 0) writeLog('Edit code above, press Load, then Step or Run');
+    } else {
+        const info = INFO[file];
+        $('log').innerHTML = `<b style="font-size:13px;color:var(--ac)">${file}</b>\n${info.title}`;
+    }
+    renderUI(); 
+}
 
-// --- FLYING BOX ANIMATION ENGINE ---
-function spawnFlyBox(textId, fromId, toId, colorVar, indexOffset) {
-    const fromEl = $(fromId), toEl = $(toId), layer =$('animation-layer');
-    if (!fromEl || !toEl || !layer) return;
+// --- TERMINAL TOGGLE ---
+$('btn-toggle-term').onclick = () => {
+    const app = $('app');
+    const btn = $('btn-toggle-term');
+    app.classList.toggle('term-collapsed');
+    btn.textContent = app.classList.contains('term-collapsed') ? '▲' : '▼';
+    requestAnimationFrame(() => requestAnimationFrame(updateWires));
+};
 
-    const fromRect = fromEl.getBoundingClientRect();
-    const toRect = toEl.getBoundingClientRect();
+// --- ORTHOGONAL PCB-STYLE SVG ROUTING ---
+const CONNECTIONS = {
+    'fetch_iq':  { from: 'panel-fetch', fEdge: 'bottom', to: 'panel-iq', tEdge: 'top', color: 'ac', ox1: -30, oy1: 0, ox2: 0, oy2: 0 },
+    'fetch_rob': { from: 'panel-fetch', fEdge: 'bottom', to: 'panel-rob', tEdge: 'top', color: 'ac', ox1: 20, oy1: 0, ox2: 0, oy2: 0 },
+    'iq_ex':     { from: 'panel-iq', fEdge: 'bottom', to: 'panel-ex', tEdge: 'top', color: 'wn', ox1: 0, oy1: 0, ox2: 0, oy2: 0 },
+    'ex_rob':    { from: 'panel-ex', fEdge: 'right', to: 'panel-rob', tEdge: 'left', color: 'er', ox1: 0, oy1: 0, ox2: 0, oy2: 60 },
+    'rob_prf':   { from: 'panel-rob', fEdge: 'right', to: 'panel-prf', tEdge: 'left', color: 'ok', ox1: 0, oy1: 0, ox2: 0, oy2: 0 }
+};
 
+function getOrthogonalPathString(fId, fEdge, tId, tEdge, ox1, oy1, ox2, oy2, animOffset = 0) {
+    const fromEl = $(fId), toEl =$(tId);
+    if (!fromEl || !toEl) return '';
+    
+    const canvas = $('editor-canvas').getBoundingClientRect();
+    const r1 = fromEl.getBoundingClientRect(), r2 = toEl.getBoundingClientRect();
+    
+    let startX = r1.left + r1.width/2 + ox1;
+    let startY = r1.top + r1.height/2 + oy1;
+    if (fEdge === 'bottom') startY = r1.bottom + oy1;
+    if (fEdge === 'top') startY = r1.top + oy1;
+    if (fEdge === 'right') startX = r1.right + ox1;
+    if (fEdge === 'left') startX = r1.left + ox1;
+    
+    let endX = r2.left + r2.width/2 + ox2;
+    let endY = r2.top + r2.height/2 + oy2;
+    if (tEdge === 'bottom') endY = r2.bottom + oy2;
+    if (tEdge === 'top') endY = r2.top + oy2;
+    if (tEdge === 'right') endX = r2.right + ox2;
+    if (tEdge === 'left') endX = r2.left + ox2;
+
+    startX = startX - canvas.left + animOffset; startY = startY - canvas.top + animOffset;
+    endX = endX - canvas.left + animOffset; endY = endY - canvas.top + animOffset;
+
+    let pts = [{x: startX, y: startY}];
+    let midX = startX + (endX - startX)/2;
+    let midY = startY + (endY - startY)/2;
+
+    if (fEdge === 'bottom' && tEdge === 'top') {
+        pts.push({x: startX, y: midY});
+        pts.push({x: endX, y: midY});
+    } else if (fEdge === 'right' && tEdge === 'left') {
+        pts.push({x: midX, y: startY});
+        pts.push({x: midX, y: endY});
+    } else if (fEdge === 'right' && tEdge === 'bottom') {
+        pts.push({x: endX, y: startY});
+    } else {
+        pts.push({x: startX, y: midY});
+        pts.push({x: endX, y: midY});
+    }
+    pts.push({x: endX, y: endY});
+    
+    let cleanPts = [pts[0]];
+    for(let i=1; i<pts.length; i++) {
+        let last = cleanPts[cleanPts.length-1];
+        if (Math.abs(pts[i].x - last.x) > 1 || Math.abs(pts[i].y - last.y) > 1) {
+            if (cleanPts.length > 1) {
+                let prev2 = cleanPts[cleanPts.length-2];
+                let dx1 = last.x - prev2.x, dy1 = last.y - prev2.y;
+                let dx2 = pts[i].x - last.x, dy2 = pts[i].y - last.y;
+                if ((dx1 === 0 && dx2 === 0) || (dy1 === 0 && dy2 === 0)) {
+                    cleanPts[cleanPts.length-1] = pts[i];
+                    continue;
+                }
+            }
+            cleanPts.push(pts[i]);
+        }
+    }
+
+    let d = `M ${cleanPts[0].x},${cleanPts[0].y}`;
+    let radius = 12;
+    for (let i = 1; i < cleanPts.length - 1; i++) {
+        let p0 = cleanPts[i-1], p1 = cleanPts[i], p2 = cleanPts[i+1];
+        let vIn = {x: p1.x - p0.x, y: p1.y - p0.y};
+        let vOut = {x: p2.x - p1.x, y: p2.y - p1.y};
+        let lenIn = Math.sqrt(vIn.x*vIn.x + vIn.y*vIn.y);
+        let lenOut = Math.sqrt(vOut.x*vOut.x + vOut.y*vOut.y);
+        
+        let r = Math.min(radius, lenIn/2, lenOut/2);
+        if (r < 1) continue; 
+        
+        let startArcX = p1.x - (vIn.x/lenIn)*r;
+        let startArcY = p1.y - (vIn.y/lenIn)*r;
+        let endArcX = p1.x + (vOut.x/lenOut)*r;
+        let endArcY = p1.y + (vOut.y/lenOut)*r;
+        let cross = (vIn.x * vOut.y) - (vIn.y * vOut.x);
+        let sweep = cross > 0 ? 1 : 0;
+        
+        d += ` L ${startArcX},${startArcY} A ${r} ${r} 0 0 ${sweep} ${endArcX},${endArcY}`;
+    }
+    let last = cleanPts[cleanPts.length-1];
+    d += ` L ${last.x},${last.y}`;
+    return d;
+}
+
+function updateWires() {
+    try {
+        const svg = $('wire-layer'); svg.innerHTML = ''; 
+        if (currentFile !== 'top.sv') return;
+
+        Object.values(CONNECTIONS).forEach(conn => {
+            const pathStr = getOrthogonalPathString(conn.from, conn.fEdge, conn.to, conn.tEdge, conn.ox1, conn.oy1, conn.ox2, conn.oy2);
+            if(!pathStr) return;
+            
+            const baseNode = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            baseNode.setAttribute("d", pathStr);
+            baseNode.setAttribute("class", "wire-base");
+            baseNode.style.stroke = `var(--${conn.color})`;
+            svg.appendChild(baseNode);
+
+            const animNode = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            animNode.setAttribute("d", pathStr);
+            animNode.setAttribute("class", "wire-anim");
+            animNode.style.stroke = `var(--${conn.color})`;
+            svg.appendChild(animNode);
+        });
+    } catch (e) {}
+}
+
+window.addEventListener('resize', () => requestAnimationFrame(updateWires));
+
+function spawnFlyBox(textId, connKey, indexOffset) {
+    const conn = CONNECTIONS[connKey];
+    if (!conn) return;
+    const layer = $('animation-layer');
+    
     const box = document.createElement('div');
     box.className = 'fly-box';
-    box.style.backgroundColor = `var(--${colorVar})`;
+    box.style.backgroundColor = `var(--${conn.color})`;
     box.textContent = 'i' + textId;
 
-    // Stagger multiple instructions visually
     const offset = (indexOffset * 15) - 15;
+    const pathStr = getOrthogonalPathString(conn.from, conn.fEdge, conn.to, conn.tEdge, conn.ox1, conn.oy1, conn.ox2, conn.oy2, offset);
+    if (!pathStr) return;
     
-    // Start Center
-    const startX = fromRect.left + (fromRect.width / 2) + offset;
-    const startY = fromRect.top + (fromRect.height / 2);
-    
-    // End Center
-    const endX = toRect.left + (toRect.width / 2) + offset;
-    const endY = toRect.top + (toRect.height / 2);
-
-    box.style.left = startX + 'px';
-    box.style.top = startY + 'px';
+    box.style.offsetPath = `path('${pathStr}')`;
     layer.appendChild(box);
 
-    // Trigger Animation Layout
     requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-            box.style.transform = `translate(${endX - startX}px, ${endY - startY}px)`;
-            box.style.opacity = '0'; // Fade out as it reaches the destination
-        });
+        box.style.animation = `travel-path 1.2s linear forwards`;
     });
 
-    // Cleanup
-    setTimeout(() => { box.remove(); }, 400);
+    setTimeout(() => { box.remove(); }, 1200);
 }
 
 function triggerFlyAnimations() {
-    const spawnGroup = (idArray, from, to, color) => {
-        idArray.forEach((id, index) => spawnFlyBox(id, `panel-${from}`, `panel-${to}`, color, index));
+    const spawnGroup = (idArray, connKey) => {
+        if(idArray) idArray.forEach((id, index) => spawnFlyBox(id, connKey, index));
     };
 
-    // Instruction flows:
-    spawnGroup(cpu.anim.fetched, 'fetch', 'iq', 'ac');    // Fetch -> Queue
-    spawnGroup(cpu.anim.fetched, 'fetch', 'rob', 'ac');   // Fetch -> ROB
-    spawnGroup(cpu.anim.issued, 'iq', 'ex', 'wn');        // Queue -> Exec
-    spawnGroup(cpu.anim.executed, 'ex', 'rob', 'er');     // Exec -> Writeback to ROB
-    spawnGroup(cpu.anim.committed, 'rob', 'prf', 'ok');   // ROB -> Arch Commit PRF
+    spawnGroup(cpu.anim.fetched, 'fetch_iq');
+    spawnGroup(cpu.anim.fetched, 'fetch_rob');
+    spawnGroup(cpu.anim.issued, 'iq_ex');
+    spawnGroup(cpu.anim.executed, 'ex_rob');
+    spawnGroup(cpu.anim.committed, 'rob_prf');
+}
+
+// --- Chat Integration ---
+async function sendChatMessage() {
+    const input = $('chat-input');
+    const message = input.value.trim();
+    if (!message) return;
+
+    const messagesContainer = $('chat-messages');
+
+    // Render User Message
+    const userMsgDiv = document.createElement('div');
+    userMsgDiv.className = 'msg-user';
+    userMsgDiv.textContent = message;
+    messagesContainer.appendChild(userMsgDiv);
+
+    // Clear input
+    input.value = '';
+
+    // Render AI Thinking Placeholder
+    const aiMsgDiv = document.createElement('div');
+    aiMsgDiv.className = 'msg-ai';
+    aiMsgDiv.textContent = 'Thinking...';
+    messagesContainer.appendChild(aiMsgDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+    // Collect pipeline snapshot
+    const stateSnapshot = {
+        cycle: cpu.cycle,
+        pc: cpu.pc,
+        stall: cpu.stall,
+        stallReason: cpu.stallReason,
+        robCount: cpu.robCount,
+        iqCount: cpu.iq.length,
+        retiredCount: cpu.retiredCount,
+        flushCount: cpu.flushCount,
+        rob: cpu.rob.map((e, idx) => e ? { idx, inst: e.inst ? e.inst.rawText : '', done: e.done, squashed: e.squashed } : null).filter(Boolean),
+        iq: cpu.iq.map(q => ({ robIdx: q.robIdx, inst: q.inst ? q.inst.rawText : '' })),
+        exec: cpu.execLanes.map(e => ({ robIdx: e.robIdx, inst: e.inst ? e.inst.rawText : '', val: e.val })),
+        speculativeRAT: cpu.speculativeRAT,
+        architecturalRAT: cpu.architecturalRAT
+    };
+
+    try {
+        const response = await fetch(`${BACKEND_URL}/chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                message: message,
+                file: currentFile,
+                assembly: $('src-code').value,
+                state: stateSnapshot
+            })
+        });
+
+        const data = await response.json();
+        if (data.reply) {
+            aiMsgDiv.textContent = data.reply;
+        } else if (data.error) {
+            aiMsgDiv.textContent = 'Error: ' + data.error;
+        }
+    } catch (err) {
+        aiMsgDiv.textContent = 'Error: Unable to connect to backend server.';
+    }
+
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
 // --- Events ---
@@ -463,11 +734,16 @@ $('btn-step').onclick = () => { if (currentFile !== 'top.sv') navigate('top.sv')
     if (!cpu.program.length && !handleLoad()) return;
     
     $('btn-run').textContent = 'Pause';
-    runTimer = setInterval(() => { if (!simulateStep() || cpu.cycle > 500) $('btn-run').click(); }, 600); // 600ms gives time for animations
+    runTimer = setInterval(() => { if (!simulateStep() || cpu.cycle > 500) $('btn-run').click(); }, 1500); 
 };
 $('btn-reset').onclick = () => { if (runTimer)$('btn-run').click(); initSimulation(true); renderUI(); };
 
-$('src-code').value = DEFAULT_ASM; initSimulation(); navigate('top.sv');
+$('btn-send').onclick = sendChatMessage;
+$('chat-input').onkeydown = e => { if (e.key === 'Enter') sendChatMessage(); };
+
+$('src-code').value = DEFAULT_ASM; 
+initSimulation(); 
+navigate('top.sv');
 </script>
 </body>
 </html>

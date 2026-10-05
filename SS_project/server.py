@@ -1,11 +1,13 @@
-import json, os
+import json
+import os
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from openai import OpenAI
 
 app = Flask(__name__)
-CORS(app)  # Allows cross-origin requests from your frontend
-client = OpenAI()  # Automatically reads OPENAI_API_KEY from environment
+CORS(app)  # Enables cross-origin requests from frontend
+
+client = OpenAI()  # Uses OPENAI_API_KEY environment variable
 MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
 
 SYSTEM = """You are a computer-architecture tutor embedded in a 4-way superscalar
@@ -21,20 +23,31 @@ Be concise and concrete."""
 
 @app.get("/")
 def health_check():
-    """Health check endpoint for Render to verify service health."""
     return jsonify(status="ok", message="OoO Simulator Backend Running")
 
 
 @app.post("/chat")
 def chat():
-    d = request.get_json(force=True)
-    ctx = f"Selected file: {d.get('file')}\nNotes: {d.get('notes')}\nLive state: {json.dumps(d.get('state'))}"
+    d = request.get_json(force=True) or {}
+    
+    file_name = d.get("file", "top.sv")
+    assembly_code = d.get("assembly", "No assembly provided")
+    state_info = d.get("state", {})
+    user_msg = d.get("message", "")
+
+    # Format assembly and execution context for GPT
+    ctx = (
+        f"Active File: {file_name}\n"
+        f"--- Assembly Code Being Executed ---\n{assembly_code}\n"
+        f"--- Current CPU State ---\n{json.dumps(state_info, indent=2)}"
+    )
+
     try:
         r = client.chat.completions.create(
             model=MODEL,
             messages=[
                 {"role": "system", "content": SYSTEM + "\n\n" + ctx},
-                {"role": "user", "content": d.get("message", "")},
+                {"role": "user", "content": user_msg},
             ],
         )
         return jsonify(reply=r.choices[0].message.content)
@@ -43,6 +56,5 @@ def chat():
 
 
 if __name__ == "__main__":
-    # Fallback for running locally; Render uses Gunicorn
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
