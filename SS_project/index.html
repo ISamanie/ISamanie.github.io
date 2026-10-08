@@ -219,7 +219,7 @@
 <body>
 <div id="app">
     <div id="sidebar">
-        <h4>TEMP_FOLDER</h4>
+        <h4>OutOfOrderSim</h4>
         <div id="files-list"></div>
         <div id="summary" class="monospace"></div>
     </div>
@@ -240,6 +240,7 @@
             <span id="terminal-title" style="font-weight: 600;">Terminal</span>
             <span style="flex:1"></span>
             <button id="btn-load">Load</button>
+            <button id="btn-prev">Prev</button>
             <button id="btn-step">Step</button>
             <button id="btn-run">Run</button>
             <button id="btn-reset" class="secondary">Reset</button>
@@ -293,9 +294,11 @@ add r5, r2, r4`;
 
 // --- CPU State ---
 let cpu, currentFile = 'top.sv', runTimer = null;
+let cpuHistory = []; // Tracks historical states for Prev button
 
 function initSimulation(keepProgram = false) {
     const program = keepProgram ? (cpu ? cpu.program : []) : [];
+    cpuHistory = [];
     cpu = {
         cycle: 0, pc: 0, instIdCounter: 0, program: program,
         rob: Array(ROB_SIZE).fill(null), robHead: 0, robCount: 0, iq: [], execLanes: [],
@@ -344,9 +347,23 @@ function handleLoad() {
 const getAge = robIndex => (robIndex - cpu.robHead + ROB_SIZE) % ROB_SIZE;
 const getFreePregs = () => cpu.pregState.map((val, idx) => val === 0 ? idx : -1).filter(idx => idx >= 0);
 
+function simulatePrev() {
+    if (cpuHistory.length > 0) {
+        cpu = cpuHistory.pop();
+        renderUI();
+        if (currentFile === 'top.sv') updateWires();
+    } else {
+        writeLog('Already at cycle 0', true);
+    }
+}
+
 function simulateStep() {
     try {
         if (!cpu.program.length) { writeLog('Load program first', true); return false; }
+        
+        // Save state snapshot for time-travel (Prev button)
+        cpuHistory.push(JSON.parse(JSON.stringify(cpu)));
+
         cpu.cycle++;
         cpu.anim = { fetched: [], issued: [], executed: [], committed: [] }; 
 
@@ -477,7 +494,9 @@ function renderUI() {
         
         $('tabs').innerHTML = `<b>${currentFile}</b><span class="monospace status-dim"> Cycle ${cpu.cycle}</span>`;
         $('files-list').innerHTML = FILES.map(f => `<div class="file-tab ${f === currentFile ? 'active' : ''}" onclick="navigate('${f}')">${f}</div>`).join('');
-        $('src-code').style.display =$('btn-load').style.display = $('btn-run').style.display =$('btn-step').style.display = (currentFile === 'top.sv') ? '' : 'none';
+        
+        // Show/Hide terminal controls
+        $('src-code').style.display = $('btn-load').style.display =$('btn-run').style.display = $('btn-prev').style.display =$('btn-step').style.display = (currentFile === 'top.sv') ? '' : 'none';
         
     } catch (err) {
         writeLog(`UI Render Error: ${err.message}`, true);
@@ -729,6 +748,7 @@ async function sendChatMessage() {
 
 // --- Events ---
 $('btn-load').onclick = handleLoad;
+$('btn-prev').onclick = () => { if (currentFile !== 'top.sv') navigate('top.sv'); simulatePrev(); };
 $('btn-step').onclick = () => { if (currentFile !== 'top.sv') navigate('top.sv'); simulateStep(); };$('btn-run').onclick = () => {
     if (runTimer) { clearInterval(runTimer); runTimer = null; $('btn-run').textContent = 'Run'; return; }
     if (!cpu.program.length && !handleLoad()) return;
